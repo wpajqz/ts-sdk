@@ -6,7 +6,7 @@ import { Utils } from './utils';
 /**
  * Client ws client, 单例模式, 负责维护连接
  */
-class Client {
+export class Client {
   public callback: callback;
   public requestHeader: string;
   public responseHeader: string;

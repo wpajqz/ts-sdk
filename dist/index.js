@@ -280,4 +280,5 @@ var Client = /** @class */ (function () {
     };
     return Client;
 }());
+exports.Client = Client;
 //# sourceMappingURL=index.js.map
