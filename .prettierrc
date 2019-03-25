@@ -1,0 +1,8 @@
+{
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "indentStyle": "es5",
+  "semi": true,
+  "arrowParens": "always",
+  "singleQuote": true
+}

@@ -1,0 +1,12 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "sourceMap": true,
+    "declaration": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "declarationDir": "dist/types"
+  },
+  "include": ["src/**/*"]
+}
