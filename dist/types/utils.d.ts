@@ -9,5 +9,6 @@ declare class Utils {
     static base64ToBin(str: string): string;
     static stringToBin(str: string): string;
     static binToString(bin: string): string;
+    private static makeCRCTable;
 }
 export { Utils };

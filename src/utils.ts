@@ -1,18 +1,5 @@
 import { AES, enc, mode, pad } from 'crypto-js';
 
-const makeCRCTable = function() {
-  var c;
-  var crcTable = [];
-  for (var n = 0; n < 256; n++) {
-    c = n;
-    for (var k = 0; k < 8; k++) {
-      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-    }
-    crcTable[n] = c;
-  }
-  return crcTable;
-};
-
 class Utils {
   private static code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split(
     '',
@@ -20,7 +7,7 @@ class Utils {
 
   public static crc32(str: string): number {
     let crcTable =
-      (<any>window).crcTable || ((<any>window).crcTable = makeCRCTable());
+      (<any>window).crcTable || ((<any>window).crcTable = Utils.makeCRCTable());
     let crc = 0 ^ -1;
 
     for (let i = 0; i < str.length; i++) {
@@ -49,7 +36,7 @@ class Utils {
   }
 
   // 字符串转为 ArrayBuffer 对象，参数为字符串
-  static str2ab(str: string): ArrayBuffer {
+  public static str2ab(str: string): ArrayBuffer {
     let buf = new ArrayBuffer(str.length); // 每个字符占用2个字节
     let bufView = new Uint8Array(buf);
 
@@ -61,7 +48,7 @@ class Utils {
   }
 
   // 解密服务端传递过来的字符串
-  static decrypt(data: string, key: string, iv: string): string {
+  public static decrypt(data: string, key: string, iv: string): string {
     const binData = Utils.stringToBin(data);
     const base64Data = Utils.binToBase64(binData);
 
@@ -75,7 +62,7 @@ class Utils {
   }
 
   // 加密字符串以后传递到服务端
-  static encrypt(data: string, key: string, iv: string): string {
+  public static encrypt(data: string, key: string, iv: string): string {
     const result = AES.encrypt(data, enc.Latin1.parse(key), {
       iv: enc.Latin1.parse(iv),
       mode: mode.CBC,
@@ -86,7 +73,7 @@ class Utils {
   }
 
   // 字节数组转换为base64编码
-  static binToBase64(bitString: string): string {
+  public static binToBase64(bitString: string): string {
     let result = '';
     let tail = bitString.length % 6;
     let bitStringTemp1 = bitString.substr(0, bitString.length - tail);
@@ -94,12 +81,12 @@ class Utils {
 
     for (let i = 0; i < bitStringTemp1.length; i += 6) {
       let index = parseInt(bitStringTemp1.substr(i, 6), 2);
-      result += this.code[index];
+      result += Utils.code[index];
     }
 
     bitStringTemp2 += new Array(7 - tail).join('0');
     if (tail) {
-      result += this.code[parseInt(bitStringTemp2, 2)];
+      result += Utils.code[parseInt(bitStringTemp2, 2)];
       result += new Array((6 - tail) / 2 + 1).join('=');
     }
 
@@ -107,7 +94,7 @@ class Utils {
   }
 
   // base64编码转换为字节数组
-  static base64ToBin(str: string): string {
+  public static base64ToBin(str: string): string {
     let bitString = '';
     let tail = 0;
 
@@ -142,6 +129,21 @@ class Utils {
     }
 
     return result;
+  }
+
+  private static makeCRCTable(): number[] {
+    let c: number;
+    let crcTable: number[] = [];
+
+    for (let n = 0; n < 256; n++) {
+      c = n;
+      for (let k = 0; k < 8; k++) {
+        c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      }
+      crcTable[n] = c;
+    }
+
+    return crcTable;
   }
 }
 

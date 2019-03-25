@@ -1,23 +1,11 @@
 "use strict";
 exports.__esModule = true;
 var crypto_js_1 = require("crypto-js");
-var makeCRCTable = function () {
-    var c;
-    var crcTable = [];
-    for (var n = 0; n < 256; n++) {
-        c = n;
-        for (var k = 0; k < 8; k++) {
-            c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-        }
-        crcTable[n] = c;
-    }
-    return crcTable;
-};
 var Utils = /** @class */ (function () {
     function Utils() {
     }
     Utils.crc32 = function (str) {
-        var crcTable = window.crcTable || (window.crcTable = makeCRCTable());
+        var crcTable = window.crcTable || (window.crcTable = Utils.makeCRCTable());
         var crc = 0 ^ -1;
         for (var i = 0; i < str.length; i++) {
             crc = (crc >>> 8) ^ crcTable[(crc ^ str.charCodeAt(i)) & 0xff];
@@ -75,11 +63,11 @@ var Utils = /** @class */ (function () {
         var bitStringTemp2 = bitString.substr(bitString.length - tail, tail);
         for (var i = 0; i < bitStringTemp1.length; i += 6) {
             var index = parseInt(bitStringTemp1.substr(i, 6), 2);
-            result += this.code[index];
+            result += Utils.code[index];
         }
         bitStringTemp2 += new Array(7 - tail).join('0');
         if (tail) {
-            result += this.code[parseInt(bitStringTemp2, 2)];
+            result += Utils.code[parseInt(bitStringTemp2, 2)];
             result += new Array((6 - tail) / 2 + 1).join('=');
         }
         return result;
@@ -115,6 +103,18 @@ var Utils = /** @class */ (function () {
             result += String.fromCharCode(parseInt(bin.substr(i, 8), 2));
         }
         return result;
+    };
+    Utils.makeCRCTable = function () {
+        var c;
+        var crcTable = [];
+        for (var n = 0; n < 256; n++) {
+            c = n;
+            for (var k = 0; k < 8; k++) {
+                c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+            }
+            crcTable[n] = c;
+        }
+        return crcTable;
     };
     Utils.code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
     return Utils;
