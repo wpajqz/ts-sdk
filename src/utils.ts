@@ -1,13 +1,18 @@
 import { AES, enc, mode, pad } from 'crypto-js';
 
+declare global {
+  interface Window {
+    crcTable: number[];
+  }
+}
+
 class Utils {
   private static code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split(
     '',
   );
 
   public static crc32(str: string): number {
-    let crcTable =
-      (<any>window).crcTable || ((<any>window).crcTable = Utils.makeCRCTable());
+    let crcTable = window.crcTable || (window.crcTable = Utils.makeCRCTable());
     let crc = 0 ^ -1;
 
     for (let i = 0; i < str.length; i++) {

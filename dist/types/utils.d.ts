@@ -1,3 +1,8 @@
+declare global {
+    interface Window {
+        crcTable: number[];
+    }
+}
 declare class Utils {
     private static code;
     static crc32(str: string): number;
