@@ -1,6 +1,24 @@
 import { Utils } from '../src/utils';
 
-test('object assignment', () => {
+test('utils crc32', () => {
   const v = Utils.crc32('/v1/session/init');
-  console.log(v);
+  expect(v).toBe(1897767088);
+});
+
+test('utils str2ab and ab2str', () => {
+  expect(Utils.ab2str(Utils.str2ab('test'))).toBe('test');
+});
+
+test('utils encrypt and decrypt', () => {
+  const key = 'b8ca9aa66def05ff3f24919274bb4a66';
+  const iv = key;
+  expect(Utils.decrypt(Utils.encrypt('test', key, iv), key, iv)).toBe('test');
+});
+
+test('utils binToBase64 and base64ToBin', () => {
+  expect(Utils.binToBase64(Utils.base64ToBin('test'))).toBe('test');
+});
+
+test('utils stringToBin and binToString', () => {
+  expect(Utils.binToString(Utils.stringToBin('test'))).toBe('test');
 });

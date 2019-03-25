@@ -61,11 +61,11 @@ class Utils {
   }
 
   // 解密服务端传递过来的字符串
-  static decrypt(data, key, iv) {
-    let binData = Utils.stringToBin(data);
-    let base64Data = Utils.binToBase64(binData);
+  static decrypt(data: string, key: string, iv: string): string {
+    const binData = Utils.stringToBin(data);
+    const base64Data = Utils.binToBase64(binData);
 
-    let bytes = AES.decrypt(base64Data, enc.Latin1.parse(key), {
+    const bytes = AES.decrypt(base64Data, enc.Latin1.parse(key), {
       iv: enc.Latin1.parse(iv),
       mode: mode.CBC,
       padding: pad.Pkcs7,
@@ -75,18 +75,18 @@ class Utils {
   }
 
   // 加密字符串以后传递到服务端
-  static encrypt(data, key, iv) {
-    let result = AES.encrypt(data, enc.Latin1.parse(key), {
+  static encrypt(data: string, key: string, iv: string): string {
+    const result = AES.encrypt(data, enc.Latin1.parse(key), {
       iv: enc.Latin1.parse(iv),
       mode: mode.CBC,
       padding: pad.Pkcs7,
     });
 
-    return Utils.binToStr(Utils.base64ToBin(result.toString()));
+    return Utils.binToString(Utils.base64ToBin(result.toString()));
   }
 
   // 字节数组转换为base64编码
-  static binToBase64(bitString) {
+  static binToBase64(bitString: string): string {
     let result = '';
     let tail = bitString.length % 6;
     let bitStringTemp1 = bitString.substr(0, bitString.length - tail);
@@ -107,7 +107,7 @@ class Utils {
   }
 
   // base64编码转换为字节数组
-  static base64ToBin(str) {
+  static base64ToBin(str: string): string {
     let bitString = '';
     let tail = 0;
 
@@ -135,7 +135,7 @@ class Utils {
   }
 
   // 字节数组转化为字符串
-  public static binToStr(bin: string): string {
+  public static binToString(bin: string): string {
     let result = '';
     for (let i = 0; i < bin.length; i += 8) {
       result += String.fromCharCode(parseInt(bin.substr(i, 8), 2));

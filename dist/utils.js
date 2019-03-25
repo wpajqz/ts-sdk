@@ -65,7 +65,7 @@ var Utils = /** @class */ (function () {
             mode: crypto_js_1.mode.CBC,
             padding: crypto_js_1.pad.Pkcs7
         });
-        return Utils.binToStr(Utils.base64ToBin(result.toString()));
+        return Utils.binToString(Utils.base64ToBin(result.toString()));
     };
     // 字节数组转换为base64编码
     Utils.binToBase64 = function (bitString) {
@@ -109,7 +109,7 @@ var Utils = /** @class */ (function () {
         return result;
     };
     // 字节数组转化为字符串
-    Utils.binToStr = function (bin) {
+    Utils.binToString = function (bin) {
         var result = '';
         for (var i = 0; i < bin.length; i += 8) {
             result += String.fromCharCode(parseInt(bin.substr(i, 8), 2));
