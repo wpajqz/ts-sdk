@@ -4,10 +4,11 @@ var utils_1 = require("./utils");
 var Int64 = require("node-int64");
 var Packet = /** @class */ (function () {
     function Packet() {
+        this.key = 'b8ca9aa66def05ff3f24919274bb4a66';
     }
-    Packet.pack = function (operator, sequence, header, body) {
-        var header = utils_1.Utils.encrypt(header, Packet.key, Packet.key);
-        var body = utils_1.Utils.encrypt(body, Packet.key, Packet.key);
+    Packet.prototype.pack = function (operator, sequence, header, body) {
+        header = utils_1.Utils.encrypt(header, this.key, this.key);
+        body = utils_1.Utils.encrypt(body, this.key, this.key);
         var headerLength = header.length;
         var bodyLength = body.length;
         var buf = new ArrayBuffer(20 + headerLength + bodyLength);
@@ -28,19 +29,18 @@ var Packet = /** @class */ (function () {
         }
         return buf;
     };
-    Packet.unPack = function (data) {
+    Packet.prototype.unPack = function (data) {
         var dataView = new DataView(data);
-        Packet.operator = dataView.getUint32(0, false);
-        Packet.sequence = new Int64(new Uint8Array(dataView.buffer.slice(4, 12))).toNumber();
-        Packet.headerLength = dataView.getUint32(12, false);
-        Packet.bodyLength = dataView.getUint32(16, false);
-        var header = utils_1.Utils.ab2str(dataView.buffer.slice(20, 20 + Packet.headerLength));
-        var body = utils_1.Utils.ab2str(dataView.buffer.slice(20 + Packet.headerLength));
-        Packet.header = utils_1.Utils.decrypt(header, Packet.key, Packet.key);
-        Packet.body = utils_1.Utils.decrypt(body, Packet.key, Packet.key);
-        return Packet;
+        this.operator = dataView.getUint32(0, false);
+        this.sequence = new Int64(new Uint8Array(dataView.buffer.slice(4, 12))).toNumber();
+        this.headerLength = dataView.getUint32(12, false);
+        this.bodyLength = dataView.getUint32(16, false);
+        var header = utils_1.Utils.ab2str(dataView.buffer.slice(20, 20 + this.headerLength));
+        var body = utils_1.Utils.ab2str(dataView.buffer.slice(20 + this.headerLength));
+        this.header = utils_1.Utils.decrypt(header, this.key, this.key);
+        this.body = utils_1.Utils.decrypt(body, this.key, this.key);
+        return this;
     };
-    Packet.key = 'b8ca9aa66def05ff3f24919274bb4a66';
     return Packet;
 }());
 exports.Packet = Packet;
