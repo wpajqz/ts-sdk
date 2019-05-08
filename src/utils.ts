@@ -12,7 +12,8 @@ class Utils {
   );
 
   public static crc32(str: string): number {
-    let crcTable = window.crcTable || (window.crcTable = Utils.makeCRCTable());
+    const crcTable =
+      window.crcTable || (window.crcTable = Utils.makeCRCTable());
     let crc = 0 ^ -1;
 
     for (let i = 0; i < str.length; i++) {
@@ -29,9 +30,9 @@ class Utils {
       return String.fromCharCode.apply(null, new Uint8Array(buf));
     }
 
-    let bufView = new Uint8Array(buf);
-    let len = bufView.length;
-    let byteStr = new Array(len);
+    const bufView = new Uint8Array(buf);
+    const len = bufView.length;
+    const byteStr = new Array(len);
 
     for (let i = 0; i < len; i++) {
       byteStr[i] = String.fromCharCode.call(null, bufView[i]);
@@ -42,8 +43,8 @@ class Utils {
 
   // 字符串转为 ArrayBuffer 对象，参数为字符串
   public static str2ab(str: string): ArrayBuffer {
-    let buf = new ArrayBuffer(str.length); // 每个字符占用2个字节
-    let bufView = new Uint8Array(buf);
+    const buf = new ArrayBuffer(str.length); // 每个字符占用2个字节
+    const bufView = new Uint8Array(buf);
 
     for (let i = 0, strLen = str.length; i < strLen; i++) {
       bufView[i] = str.charCodeAt(i);
@@ -79,9 +80,10 @@ class Utils {
 
   // 字节数组转换为base64编码
   public static binToBase64(bitString: string): string {
+    const tail = bitString.length % 6;
+    const bitStringTemp1 = bitString.substr(0, bitString.length - tail);
+
     let result = '';
-    let tail = bitString.length % 6;
-    let bitStringTemp1 = bitString.substr(0, bitString.length - tail);
     let bitStringTemp2 = bitString.substr(bitString.length - tail, tail);
 
     for (let i = 0; i < bitStringTemp1.length; i += 6) {
