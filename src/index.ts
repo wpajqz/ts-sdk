@@ -1,12 +1,13 @@
-import * as constant from './constant';
 import { ReadyStateCallback, RequestCallback } from './callback';
 import { Packet } from './packet';
 import { Utils } from './utils';
 
+const MAX_PAYLOAD = 1024 * 1024;
+
 /**
  * Client ws client, 单例模式, 负责维护连接
  */
-export class Client {
+class Client {
   private requestCallback: RequestCallback;
   private requestHeader: string;
   private responseHeader: string;
@@ -18,7 +19,7 @@ export class Client {
   private readyStateCallback: ReadyStateCallback;
 
   constructor(url: string, readyStateCallback: ReadyStateCallback) {
-    this.maxPayload = constant.MAX_PAYLOAD;
+    this.maxPayload = MAX_PAYLOAD;
     this.url = url;
     this.readyStateCallback = readyStateCallback;
 
@@ -36,7 +37,7 @@ export class Client {
     }
 
     let _this = this;
-    this.addMessageListener(0, function (data) {
+    this.addMessageListener(0, function(data) {
       let code = _this.getResponseProperty('code');
       if (typeof code !== 'undefined') {
         let message = _this.getResponseProperty('message');
@@ -93,7 +94,7 @@ export class Client {
     let _this = this;
     let sequence = new Date().getTime();
     let listener = Utils.crc32(operator) + sequence;
-    this.requestCallback[listener] = function (data) {
+    this.requestCallback[listener] = function(data) {
       let code = _this.getResponseProperty('code');
       if (typeof code !== 'undefined') {
         let message = _this.getResponseProperty('message');
@@ -197,16 +198,14 @@ export class Client {
   }
 
   // 创建连接
-  connect() {
-    const url = this.url;
+  connect(): WebSocket {
     const readyStateCallback = this.readyStateCallback;
 
-    let ws = new WebSocket(url);
+    let ws = new WebSocket(this.url);
+    ws.binaryType = 'blob';
     let _this = this;
 
-    ws.binaryType = 'blob';
-
-    ws.onopen = function (ev) {
+    ws.onopen = function(ev) {
       _this.reconnectTimes = 0;
       if (
         readyStateCallback.hasOwnProperty('onOpen') &&
@@ -216,7 +215,7 @@ export class Client {
       }
     };
 
-    ws.onclose = function (ev) {
+    ws.onclose = function(ev) {
       _this.reconnect();
       if (
         readyStateCallback.hasOwnProperty('onClose') &&
@@ -226,7 +225,7 @@ export class Client {
       }
     };
 
-    ws.onerror = function (ev) {
+    ws.onerror = function(ev) {
       _this.reconnect();
       if (
         readyStateCallback.hasOwnProperty('onError') &&
@@ -236,16 +235,16 @@ export class Client {
       }
     };
 
-    ws.onmessage = function (ev) {
+    ws.onmessage = function(ev) {
       if (ev.data instanceof Blob) {
         let reader = new FileReader();
         reader.readAsArrayBuffer(ev.data);
-        reader.onload = function () {
+        reader.onload = function() {
           try {
             let packet = new Packet().unPack(this.result);
             let packetLength = packet.headerLength + packet.bodyLength + 20;
-            if (packetLength > constant.MAX_PAYLOAD) {
-              throw new Error('the packet is big than ' + constant.MAX_PAYLOAD);
+            if (packetLength > MAX_PAYLOAD) {
+              throw new Error('the packet is big than ' + MAX_PAYLOAD);
             }
 
             let operator = Number(packet.operator) + Number(packet.sequence);
@@ -285,3 +284,5 @@ export class Client {
     }
   }
 }
+
+export { Client, MAX_PAYLOAD };
