@@ -1,12 +1,14 @@
-export interface ReadyStateCallback {
-  onOpen(ev: Event);
-  onError(ev: Event);
-  onClose(ev: Event);
+interface ReadyStateCallback {
+  onOpen(ev: Event): void;
+  onError(ev: Event): void;
+  onClose(ev: Event): void;
 }
 
-export interface RequestCallback {
-  onStart();
-  onSuccess(data: string);
-  onError(code: number, message: string);
-  onEnd();
+interface RequestCallback {
+  onStart(): void;
+  onSuccess(data: string): void;
+  onError(code: number, message: string): void;
+  onEnd(): void;
 }
+
+export { ReadyStateCallback, RequestCallback };

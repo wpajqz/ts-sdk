@@ -36,7 +36,7 @@ export class Client {
     }
 
     let _this = this;
-    this.addMessageListener(0, function(data) {
+    this.addMessageListener(0, function (data) {
       let code = _this.getResponseProperty('code');
       if (typeof code !== 'undefined') {
         let message = _this.getResponseProperty('message');
@@ -93,7 +93,7 @@ export class Client {
     let _this = this;
     let sequence = new Date().getTime();
     let listener = Utils.crc32(operator) + sequence;
-    this.requestCallback[listener] = function(data) {
+    this.requestCallback[listener] = function (data) {
       let code = _this.getResponseProperty('code');
       if (typeof code !== 'undefined') {
         let message = _this.getResponseProperty('message');
@@ -206,7 +206,7 @@ export class Client {
 
     ws.binaryType = 'blob';
 
-    ws.onopen = function(ev) {
+    ws.onopen = function (ev) {
       _this.reconnectTimes = 0;
       if (
         readyStateCallback.hasOwnProperty('onOpen') &&
@@ -216,7 +216,7 @@ export class Client {
       }
     };
 
-    ws.onclose = function(ev) {
+    ws.onclose = function (ev) {
       _this.reconnect();
       if (
         readyStateCallback.hasOwnProperty('onClose') &&
@@ -226,7 +226,7 @@ export class Client {
       }
     };
 
-    ws.onerror = function(ev) {
+    ws.onerror = function (ev) {
       _this.reconnect();
       if (
         readyStateCallback.hasOwnProperty('onError') &&
@@ -236,11 +236,11 @@ export class Client {
       }
     };
 
-    ws.onmessage = function(ev) {
+    ws.onmessage = function (ev) {
       if (ev.data instanceof Blob) {
         let reader = new FileReader();
         reader.readAsArrayBuffer(ev.data);
-        reader.onload = function() {
+        reader.onload = function () {
           try {
             let packet = new Packet().unPack(this.result);
             let packetLength = packet.headerLength + packet.bodyLength + 20;
