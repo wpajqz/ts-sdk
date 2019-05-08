@@ -25,6 +25,28 @@ const client = new Client(
           }
         })(),
       );
+
+      client.syncSend(
+        '/v1/healthy',
+        undefined,
+        new (class {
+          onStart(): void {
+            console.log('start request');
+          }
+
+          onSuccess(data: string): void {
+            console.log('request successful:', data);
+          }
+
+          onError(code: number, message: string): void {
+            console.log('request error:', message);
+          }
+
+          onEnd(): void {
+            console.log('end request');
+          }
+        })(),
+      );
     }
 
     onClose(ev: Event) {

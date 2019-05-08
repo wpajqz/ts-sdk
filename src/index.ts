@@ -71,54 +71,30 @@ class Client {
    * @param {*} param
    * @param {*} callback 仅此次有效的callback
    */
-  asyncSend(operator, param, callback) {
+  asyncSend(operator: string, param: any, callback: RequestCallback) {
     console.info('websocket send data', operator, this.requestHeader, param);
-
-    if (typeof callback !== 'object') {
-      throw new Error('callback must be an object');
-    }
 
     if (this.socket.readyState !== this.socket.OPEN) {
       throw new Error('asyncSend: connection refuse');
     }
 
-    if (
-      callback.hasOwnProperty('onStart') &&
-      typeof callback.onStart === 'function'
-    ) {
-      callback.onStart();
-    }
+    callback.onStart();
 
-    let sequence = new Date().getTime();
-    let listener = Utils.crc32(operator) + sequence;
-    this.requestCallback[listener] = (data) => {
-      let code = this.getResponseProperty('code');
-      if (typeof code !== 'undefined') {
-        let message = this.getResponseProperty('message');
-        if (
-          callback.hasOwnProperty('onError') &&
-          typeof callback.onError === 'function'
-        ) {
-          callback.onError(code, message);
-        }
+    const sequence = new Date().getTime();
+    const listener = Utils.crc32(operator) + sequence;
+    this.listeners.set(listener, (data: string) => {
+      const code = this.getResponseProperty('code');
+      if (code !== '') {
+        const message = this.getResponseProperty('message');
+        callback.onError(Number(code), message);
       } else {
-        if (
-          callback.hasOwnProperty('onSuccess') &&
-          typeof callback.onSuccess === 'function'
-        ) {
-          callback.onSuccess(data);
-        }
+        callback.onSuccess(data);
       }
 
-      if (
-        callback.hasOwnProperty('onEnd') &&
-        typeof callback.onEnd === 'function'
-      ) {
-        callback.onEnd();
-      }
+      callback.onEnd();
 
-      delete this.requestCallback[listener];
-    };
+      delete this.listeners[listener];
+    });
 
     const p = new Packet();
     this.send(
@@ -132,7 +108,7 @@ class Client {
   }
 
   // 同步请求服务端数据
-  async syncSend(operator, param, callback) {
+  async syncSend(operator: string, param: any, callback: RequestCallback) {
     await this.asyncSend(operator, param, callback);
   }
 
