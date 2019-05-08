@@ -6,7 +6,7 @@ const client = new Client(
   new (class {
     onOpen(ev: Event) {
       client.ping(
-        undefined,
+        {},
         new (class {
           onStart(): void {
             console.log('start ping');
@@ -28,7 +28,7 @@ const client = new Client(
 
       client.syncSend(
         '/v1/healthy',
-        undefined,
+        {},
         new (class {
           onStart(): void {
             console.log('start request');

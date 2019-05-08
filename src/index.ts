@@ -20,15 +20,17 @@ class Client {
 
   constructor(url: string, readyStateCallback: ReadyStateCallback) {
     this.listeners = new Map<number, (data: string) => void>();
+    this.requestHeader = '';
+    this.requestHeader = '';
     this.maxPayload = MAX_PAYLOAD;
     this.url = url;
+    this.reconnectTimes = 0;
     this.readyStateCallback = readyStateCallback;
-
     this.socket = this.connect();
   }
 
   // 向服务端发送ping包保持长连接
-  ping(param = {}, requestCallback: RequestCallback) {
+  ping(param: any, requestCallback: RequestCallback) {
     if (this.socket.readyState !== this.socket.OPEN) {
       throw new Error('asyncSend: connection refuse');
     }
@@ -52,7 +54,7 @@ class Client {
     this.send(p.pack(0, 0, this.requestHeader, JSON.stringify(param)));
   }
 
-  send(data) {
+  send(data: ArrayBuffer) {
     if (this.socket.readyState !== this.socket.OPEN) {
       console.error('WebSocket is already in CLOSING or CLOSED state.');
       return;
