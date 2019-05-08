@@ -1,5 +1,5 @@
 import * as constant from './constant';
-import { readyStateCallback, callback } from './callback';
+import { ReadyStateCallback, RequestCallback } from './callback';
 import { Packet } from './packet';
 import { Utils } from './utils';
 
@@ -7,7 +7,7 @@ import { Utils } from './utils';
  * Client ws client, 单例模式, 负责维护连接
  */
 export class Client {
-  private requestCallback: callback;
+  private requestCallback: RequestCallback;
   private requestHeader: string;
   private responseHeader: string;
   private maxPayload: number;
@@ -15,9 +15,9 @@ export class Client {
   private reconnectTimes: number;
   private reconnectLock: boolean;
   private socket: WebSocket;
-  private readyStateCallback: readyStateCallback;
+  private readyStateCallback: ReadyStateCallback;
 
-  constructor(url: string, readyStateCallback: readyStateCallback) {
+  constructor(url: string, readyStateCallback: ReadyStateCallback) {
     this.maxPayload = constant.MAX_PAYLOAD;
     this.url = url;
     this.readyStateCallback = readyStateCallback;
@@ -207,7 +207,6 @@ export class Client {
     ws.binaryType = 'blob';
 
     ws.onopen = function(ev) {
-      console.info('websocket connected');
       _this.reconnectTimes = 0;
       if (
         readyStateCallback.hasOwnProperty('onOpen') &&
@@ -218,7 +217,6 @@ export class Client {
     };
 
     ws.onclose = function(ev) {
-      console.info('websocket disconnected');
       _this.reconnect();
       if (
         readyStateCallback.hasOwnProperty('onClose') &&
@@ -229,7 +227,6 @@ export class Client {
     };
 
     ws.onerror = function(ev) {
-      console.info('websocket error disconnected');
       _this.reconnect();
       if (
         readyStateCallback.hasOwnProperty('onError') &&

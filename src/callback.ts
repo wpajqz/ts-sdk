@@ -1,10 +1,10 @@
-export interface readyStateCallback {
+export interface ReadyStateCallback {
   onOpen(ev: Event);
   onError(ev: Event);
   onClose(ev: Event);
 }
 
-export interface callback {
+export interface RequestCallback {
   onStart();
   onSuccess(data: string);
   onError(code: number, message: string);
