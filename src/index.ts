@@ -7,27 +7,20 @@ import { Utils } from './utils';
  * Client ws client, 单例模式, 负责维护连接
  */
 export class Client {
-  public callback: callback;
-  public requestHeader: string;
-  public responseHeader: string;
-  public maxPayload: number;
-  public url: string;
-  public reconnectTimes: number;
-  public reconnectLock: boolean;
-  public socket: WebSocket;
-  public readyStateCallback: readyStateCallback;
+  private requestCallback: callback;
+  private requestHeader: string;
+  private responseHeader: string;
+  private maxPayload: number;
+  private url: string;
+  private reconnectTimes: number;
+  private reconnectLock: boolean;
+  private socket: WebSocket;
+  private readyStateCallback: readyStateCallback;
 
   constructor(url: string, readyStateCallback: readyStateCallback) {
-    if (!('WebSocket' in window)) {
-      return;
-    }
-
-    this.requestHeader = '';
     this.maxPayload = constant.MAX_PAYLOAD;
     this.url = url;
     this.readyStateCallback = readyStateCallback;
-    this.reconnectTimes = 0;
-    this.reconnectLock = false;
 
     this.socket = this.connect();
   }
@@ -100,7 +93,7 @@ export class Client {
     let _this = this;
     let sequence = new Date().getTime();
     let listener = Utils.crc32(operator) + sequence;
-    this.callback[listener] = function(data) {
+    this.requestCallback[listener] = function(data) {
       let code = _this.getResponseProperty('code');
       if (typeof code !== 'undefined') {
         let message = _this.getResponseProperty('message');
@@ -126,7 +119,7 @@ export class Client {
         callback.onEnd();
       }
 
-      delete _this.callback[listener];
+      delete _this.requestCallback[listener];
     };
 
     const p = new Packet();
@@ -147,12 +140,12 @@ export class Client {
 
   // 添加消息监听
   addMessageListener(operator, listener) {
-    this.callback[Utils.crc32(operator)] = listener;
+    this.requestCallback[Utils.crc32(operator)] = listener;
   }
 
   // 移除消息监听
   removeMessageListener(operator) {
-    delete this.callback[Utils.crc32(operator)];
+    delete this.requestCallback[Utils.crc32(operator)];
   }
 
   // 获取socket的链接状态
@@ -217,10 +210,10 @@ export class Client {
       console.info('websocket connected');
       _this.reconnectTimes = 0;
       if (
-        readyStateCallback.hasOwnProperty('onopen') &&
-        typeof readyStateCallback.onopen === 'function'
+        readyStateCallback.hasOwnProperty('onOpen') &&
+        typeof readyStateCallback.onOpen === 'function'
       ) {
-        readyStateCallback.onopen(ev);
+        readyStateCallback.onOpen(ev);
       }
     };
 
@@ -228,10 +221,10 @@ export class Client {
       console.info('websocket disconnected');
       _this.reconnect();
       if (
-        readyStateCallback.hasOwnProperty('onclose') &&
-        typeof readyStateCallback.onclose === 'function'
+        readyStateCallback.hasOwnProperty('onClose') &&
+        typeof readyStateCallback.onClose === 'function'
       ) {
-        readyStateCallback.onclose(ev);
+        readyStateCallback.onClose(ev);
       }
     };
 
@@ -239,10 +232,10 @@ export class Client {
       console.info('websocket error disconnected');
       _this.reconnect();
       if (
-        readyStateCallback.hasOwnProperty('onerror') &&
-        typeof readyStateCallback.onerror === 'function'
+        readyStateCallback.hasOwnProperty('onError') &&
+        typeof readyStateCallback.onError === 'function'
       ) {
-        readyStateCallback.onerror(ev);
+        readyStateCallback.onError(ev);
       }
     };
 
@@ -259,12 +252,12 @@ export class Client {
             }
 
             let operator = Number(packet.operator) + Number(packet.sequence);
-            if (_this.callback.hasOwnProperty(operator)) {
+            if (_this.requestCallback.hasOwnProperty(operator)) {
               if (packet.body === '') {
                 packet.body = '{}';
               }
               _this.responseHeader = packet.header;
-              _this.callback[operator](JSON.parse(packet.body));
+              _this.requestCallback[operator](JSON.parse(packet.body));
             }
             if (operator !== 0 && packet.body !== 'null') {
               console.info('receive data', packet.body);

@@ -3,11 +3,12 @@
   "compilerOptions": {
     "target": "es6",
     "moduleResolution": "node",
+    "strictNullChecks": false,
     "alwaysStrict": true,
     "sourceMap": true,
     "declaration": true,
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "dist/",
     "declarationDir": "dist/types"
   },
   "include": ["src/**/*"]

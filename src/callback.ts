@@ -1,7 +1,7 @@
 export interface readyStateCallback {
-  onopen(ev: Event);
-  onerror(ev: Event);
-  onclose(ev: Event);
+  onOpen(ev: Event);
+  onError(ev: Event);
+  onClose(ev: Event);
 }
 
 export interface callback {
