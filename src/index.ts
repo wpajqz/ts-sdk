@@ -9,7 +9,6 @@ const MAX_PAYLOAD = 1024 * 1024;
  */
 class Client {
   private listeners: Map<number, (data: string) => void>;
-  private requestCallback: RequestCallback;
   private requestHeader: string;
   private responseHeader: string;
   private maxPayload: number;
