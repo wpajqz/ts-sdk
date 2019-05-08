@@ -157,7 +157,7 @@ class Client {
   }
 
   // 设置请求属性
-  setRequestProperty(key, value) {
+  setRequestProperty(key: string, value: string) {
     let v = this.getRequestProperty(key);
 
     this.requestHeader = this.requestHeader.replace(key + '=' + v + ';', '');
@@ -165,18 +165,22 @@ class Client {
   }
 
   // 获取请求属性
-  getRequestProperty(key) {
-    let values = this.requestHeader.split(';');
-    for (let index in values) {
-      let kv = values[index].split('=');
-      if (kv[0] === key) {
-        return kv[1];
+  getRequestProperty(key: string): string {
+    if (this.requestHeader !== undefined) {
+      let values = this.requestHeader.split(';');
+      for (let index in values) {
+        let kv = values[index].split('=');
+        if (kv[0] === key) {
+          return kv[1];
+        }
       }
     }
+
+    return '';
   }
 
   // 设置Response属性
-  setResponseProperty(key, value) {
+  setResponseProperty(key: string, value: string) {
     let v = this.getResponseProperty(key);
 
     this.responseHeader = this.responseHeader.replace(key + '=' + v + ';', '');
@@ -184,12 +188,14 @@ class Client {
   }
 
   // 获取响应属性
-  getResponseProperty(key): string {
-    let values = this.responseHeader.split(';');
-    for (let index in values) {
-      let kv = values[index].split('=');
-      if (kv[0] === key) {
-        return kv[1];
+  getResponseProperty(key: string): string {
+    if (this.responseHeader !== undefined) {
+      let values = this.responseHeader.split(';');
+      for (let index in values) {
+        let kv = values[index].split('=');
+        if (kv[0] === key) {
+          return kv[1];
+        }
       }
     }
 
