@@ -27,32 +27,27 @@ class Client {
   }
 
   // 向服务端发送ping包保持长连接
-  ping(param = {}, callback = {}) {
-    if (typeof callback !== 'object') {
-      throw new Error('callback must be an object');
-    }
-
+  ping(param = {}, requestCallback: RequestCallback) {
     if (this.socket.readyState !== this.socket.OPEN) {
       throw new Error('asyncSend: connection refuse');
     }
 
-    let _this = this;
-    this.addMessageListener(0, function(data) {
-      let code = _this.getResponseProperty('code');
+    this.addMessageListener(0, (data) => {
+      let code = this.getResponseProperty('code');
       if (typeof code !== 'undefined') {
-        let message = _this.getResponseProperty('message');
-        if (this.callback.onError !== null) {
-          this.callback.onError(code, message);
+        let message = this.getResponseProperty('message');
+        if (requestCallback.onError !== null) {
+          requestCallback.onError(Number(code), message);
         }
       } else {
-        this.callback.onSuccess(data);
+        requestCallback.onSuccess(data);
       }
 
-      this.callback.onEnd();
+      requestCallback.onEnd();
     });
 
     const p = new Packet();
-    _this.send(p.pack(0, 0, _this.requestHeader, JSON.stringify(param)));
+    this.send(p.pack(0, 0, this.requestHeader, JSON.stringify(param)));
   }
 
   send(data) {
@@ -91,13 +86,12 @@ class Client {
       callback.onStart();
     }
 
-    let _this = this;
     let sequence = new Date().getTime();
     let listener = Utils.crc32(operator) + sequence;
-    this.requestCallback[listener] = function(data) {
-      let code = _this.getResponseProperty('code');
+    this.requestCallback[listener] = (data) => {
+      let code = this.getResponseProperty('code');
       if (typeof code !== 'undefined') {
-        let message = _this.getResponseProperty('message');
+        let message = this.getResponseProperty('message');
         if (
           callback.hasOwnProperty('onError') &&
           typeof callback.onError === 'function'
@@ -120,7 +114,7 @@ class Client {
         callback.onEnd();
       }
 
-      delete _this.requestCallback[listener];
+      delete this.requestCallback[listener];
     };
 
     const p = new Packet();
@@ -187,7 +181,7 @@ class Client {
   }
 
   // 获取响应属性
-  getResponseProperty(key) {
+  getResponseProperty(key): string {
     let values = this.responseHeader.split(';');
     for (let index in values) {
       let kv = values[index].split('=');
@@ -195,18 +189,19 @@ class Client {
         return kv[1];
       }
     }
+
+    return '';
   }
 
   // 创建连接
   connect(): WebSocket {
     const readyStateCallback = this.readyStateCallback;
-
     let ws = new WebSocket(this.url);
-    ws.binaryType = 'blob';
-    let _this = this;
 
-    ws.onopen = function(ev) {
-      _this.reconnectTimes = 0;
+    ws.binaryType = 'blob';
+
+    ws.onopen = (ev) => {
+      this.reconnectTimes = 0;
       if (
         readyStateCallback.hasOwnProperty('onOpen') &&
         typeof readyStateCallback.onOpen === 'function'
@@ -215,8 +210,8 @@ class Client {
       }
     };
 
-    ws.onclose = function(ev) {
-      _this.reconnect();
+    ws.onclose = (ev) => {
+      this.reconnect();
       if (
         readyStateCallback.hasOwnProperty('onClose') &&
         typeof readyStateCallback.onClose === 'function'
@@ -225,8 +220,8 @@ class Client {
       }
     };
 
-    ws.onerror = function(ev) {
-      _this.reconnect();
+    ws.onerror = (ev) => {
+      this.reconnect();
       if (
         readyStateCallback.hasOwnProperty('onError') &&
         typeof readyStateCallback.onError === 'function'
@@ -235,25 +230,25 @@ class Client {
       }
     };
 
-    ws.onmessage = function(ev) {
+    ws.onmessage = (ev) => {
       if (ev.data instanceof Blob) {
         let reader = new FileReader();
         reader.readAsArrayBuffer(ev.data);
-        reader.onload = function() {
+        reader.onload = () => {
           try {
-            let packet = new Packet().unPack(this.result);
+            let packet = new Packet().unPack(reader.result);
             let packetLength = packet.headerLength + packet.bodyLength + 20;
             if (packetLength > MAX_PAYLOAD) {
               throw new Error('the packet is big than ' + MAX_PAYLOAD);
             }
 
             let operator = Number(packet.operator) + Number(packet.sequence);
-            if (_this.requestCallback.hasOwnProperty(operator)) {
+            if (this.requestCallback.hasOwnProperty(operator)) {
               if (packet.body === '') {
                 packet.body = '{}';
               }
-              _this.responseHeader = packet.header;
-              _this.requestCallback[operator](JSON.parse(packet.body));
+              this.responseHeader = packet.header;
+              this.requestCallback[operator](JSON.parse(packet.body));
             }
             if (operator !== 0 && packet.body !== 'null') {
               console.info('receive data', packet.body);
