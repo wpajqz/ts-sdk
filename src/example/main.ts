@@ -5,7 +5,26 @@ const client = new Client(
   url,
   new (class {
     onOpen(ev: Event) {
-      console.log('open connection', ev.target);
+      client.ping(
+        undefined,
+        new (class {
+          onStart(): void {
+            console.log('start ping');
+          }
+
+          onSuccess(data: string): void {
+            console.log('ping successful:', data);
+          }
+
+          onError(code: number, message: string): void {
+            console.log('ping error:', message);
+          }
+
+          onEnd(): void {
+            console.log('end ping');
+          }
+        })(),
+      );
     }
 
     onClose(ev: Event) {
@@ -18,5 +37,3 @@ const client = new Client(
     }
   })(),
 );
-
-console.log(client);

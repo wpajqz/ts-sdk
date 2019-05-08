@@ -8,6 +8,7 @@ const MAX_PAYLOAD = 1024 * 1024;
  * Client ws client, 单例模式, 负责维护连接
  */
 class Client {
+  private listeners: Map<number, (data: string) => void>;
   private requestCallback: RequestCallback;
   private requestHeader: string;
   private responseHeader: string;
@@ -19,6 +20,7 @@ class Client {
   private readyStateCallback: ReadyStateCallback;
 
   constructor(url: string, readyStateCallback: ReadyStateCallback) {
+    this.listeners = new Map<number, (data: string) => void>();
     this.maxPayload = MAX_PAYLOAD;
     this.url = url;
     this.readyStateCallback = readyStateCallback;
@@ -32,19 +34,20 @@ class Client {
       throw new Error('asyncSend: connection refuse');
     }
 
-    this.addMessageListener(0, (data) => {
-      let code = this.getResponseProperty('code');
-      if (typeof code !== 'undefined') {
-        let message = this.getResponseProperty('message');
-        if (requestCallback.onError !== null) {
+    this.listeners.set(
+      0,
+      (data: string): void => {
+        const code = this.getResponseProperty('code');
+        if (code !== '') {
+          const message = this.getResponseProperty('message');
           requestCallback.onError(Number(code), message);
+        } else {
+          requestCallback.onSuccess(data);
         }
-      } else {
-        requestCallback.onSuccess(data);
-      }
 
-      requestCallback.onEnd();
-    });
+        requestCallback.onEnd();
+      },
+    );
 
     const p = new Packet();
     this.send(p.pack(0, 0, this.requestHeader, JSON.stringify(param)));
@@ -134,13 +137,13 @@ class Client {
   }
 
   // 添加消息监听
-  addMessageListener(operator, listener) {
-    this.requestCallback[Utils.crc32(operator)] = listener;
+  addMessageListener(operator: string, listener: (data: string) => void) {
+    this.listeners[Utils.crc32(operator)] = listener;
   }
 
   // 移除消息监听
-  removeMessageListener(operator) {
-    delete this.requestCallback[Utils.crc32(operator)];
+  removeMessageListener(operator: string) {
+    delete this.listeners[Utils.crc32(operator)];
   }
 
   // 获取socket的链接状态
@@ -202,32 +205,20 @@ class Client {
 
     ws.onopen = (ev) => {
       this.reconnectTimes = 0;
-      if (
-        readyStateCallback.hasOwnProperty('onOpen') &&
-        typeof readyStateCallback.onOpen === 'function'
-      ) {
-        readyStateCallback.onOpen(ev);
-      }
+
+      readyStateCallback.onOpen(ev);
     };
 
     ws.onclose = (ev) => {
       this.reconnect();
-      if (
-        readyStateCallback.hasOwnProperty('onClose') &&
-        typeof readyStateCallback.onClose === 'function'
-      ) {
-        readyStateCallback.onClose(ev);
-      }
+
+      readyStateCallback.onClose(ev);
     };
 
     ws.onerror = (ev) => {
       this.reconnect();
-      if (
-        readyStateCallback.hasOwnProperty('onError') &&
-        typeof readyStateCallback.onError === 'function'
-      ) {
-        readyStateCallback.onError(ev);
-      }
+
+      readyStateCallback.onError(ev);
     };
 
     ws.onmessage = (ev) => {
@@ -238,28 +229,30 @@ class Client {
           try {
             let packet = new Packet().unPack(reader.result);
             let packetLength = packet.headerLength + packet.bodyLength + 20;
-            if (packetLength > MAX_PAYLOAD) {
-              throw new Error('the packet is big than ' + MAX_PAYLOAD);
+            if (packetLength > this.maxPayload) {
+              throw new Error('the packet is big than ' + this.maxPayload);
             }
 
             let operator = Number(packet.operator) + Number(packet.sequence);
-            if (this.requestCallback.hasOwnProperty(operator)) {
+            if (this.listeners.has(operator)) {
               if (packet.body === '') {
                 packet.body = '{}';
               }
-              this.responseHeader = packet.header;
-              this.requestCallback[operator](JSON.parse(packet.body));
+
+              (<(data: string) => void>this.listeners.get(operator))(
+                packet.body,
+              );
             }
+
             if (operator !== 0 && packet.body !== 'null') {
               console.info('receive data', packet.body);
             }
           } catch (e) {
-            console.info(e);
             throw new Error(e);
           }
         };
       } else {
-        throw new Error('websocket unsupported data format');
+        throw new Error('unsupported data format');
       }
     };
 
