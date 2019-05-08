@@ -1,6 +1,7 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    "module": "system",
     "alwaysStrict": true,
     "sourceMap": true,
     "declaration": true,
