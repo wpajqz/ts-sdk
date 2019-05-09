@@ -3,11 +3,6 @@ import { Packet } from './packet';
 import { Utils } from './utils';
 
 /**
- * 数据包默认最大发送的数据量大小
- */
-const MAX_PAYLOAD = 1024 * 1024;
-
-/**
  * 初始化链接以及收发数据
  */
 class Client {
@@ -30,7 +25,7 @@ class Client {
     this.listeners = new Map<number, (data: string) => void>();
     this.requestHeader = '';
     this.requestHeader = '';
-    this._maxPayload = MAX_PAYLOAD;
+    this._maxPayload = 1024 * 1024;
     this.url = url;
     this.reconnectTimes = 0;
     this.readyStateCallback = readyStateCallback;
@@ -328,4 +323,4 @@ class Client {
   }
 }
 
-export { Client, MAX_PAYLOAD };
+export { Client };
