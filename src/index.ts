@@ -123,7 +123,7 @@ class Client {
   }
 
   // 获取socket的链接状态
-  public getReadyState(): number {
+  public get readyState(): number {
     return this.socket.readyState;
   }
 
