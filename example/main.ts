@@ -1,4 +1,4 @@
-import { Client } from '../src/index';
+import { Client } from '../src/client';
 
 const url = 'ws://127.0.0.1:8081';
 const client = new Client(
