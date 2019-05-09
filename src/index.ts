@@ -8,10 +8,10 @@ const MAX_PAYLOAD = 1024 * 1024;
  * Client ws client, 单例模式, 负责维护连接
  */
 class Client {
+  private _maxPayload: number;
   private listeners: Map<number, (data: string) => void>;
   private requestHeader: string;
   private responseHeader: string;
-  private maxPayload: number;
   private url: string;
   private reconnectTimes: number;
   private reconnectLock: boolean;
@@ -22,7 +22,7 @@ class Client {
     this.listeners = new Map<number, (data: string) => void>();
     this.requestHeader = '';
     this.requestHeader = '';
-    this.maxPayload = MAX_PAYLOAD;
+    this._maxPayload = MAX_PAYLOAD;
     this.url = url;
     this.reconnectTimes = 0;
     this.readyStateCallback = readyStateCallback;
@@ -123,13 +123,17 @@ class Client {
   }
 
   // 获取socket的链接状态
-  public getReadyState() {
+  public getReadyState(): number {
     return this.socket.readyState;
   }
 
   // 设置单个请求能够处理的最大字节数
-  public setMaxPayload(maxPayload) {
-    this.maxPayload = maxPayload;
+  public set maxPayload(maxPayload: number) {
+    this._maxPayload = maxPayload;
+  }
+
+  public get maxPayload(): number {
+    return this._maxPayload;
   }
 
   // 设置请求属性
@@ -211,8 +215,8 @@ class Client {
           try {
             let packet = new Packet().unPack(reader.result);
             let packetLength = packet.headerLength + packet.bodyLength + 20;
-            if (packetLength > this.maxPayload) {
-              throw new Error('the packet is big than ' + this.maxPayload);
+            if (packetLength > this._maxPayload) {
+              throw new Error('the packet is big than ' + this._maxPayload);
             }
 
             let operator = Number(packet.operator) + Number(packet.sequence);
