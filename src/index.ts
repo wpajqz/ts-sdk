@@ -30,7 +30,7 @@ class Client {
   }
 
   // 向服务端发送ping包保持长连接
-  ping(param: any, requestCallback: RequestCallback) {
+  public ping(param: any, requestCallback: RequestCallback) {
     if (this.socket.readyState !== this.socket.OPEN) {
       throw new Error('asyncSend: connection refuse');
     }
@@ -58,25 +58,13 @@ class Client {
     );
   }
 
-  send(data: ArrayBuffer) {
-    if (this.socket.readyState !== this.socket.OPEN) {
-      console.error('WebSocket is already in CLOSING or CLOSED state.');
-      return;
-    }
-    try {
-      this.socket.send(data);
-    } catch (e) {
-      console.log('send data error', e);
-    }
-  }
-
   /**
    * asyncSend
    * @param {*} operator
    * @param {*} param
    * @param {*} callback 仅此次有效的callback
    */
-  asyncSend(operator: string, param: any, callback: RequestCallback) {
+  public asyncSend(operator: string, param: any, callback: RequestCallback) {
     console.info('websocket send data', operator, this.requestHeader, param);
 
     if (this.socket.readyState !== this.socket.OPEN) {
@@ -113,32 +101,39 @@ class Client {
   }
 
   // 同步请求服务端数据
-  async syncSend(operator: string, param: any, callback: RequestCallback) {
+  public async syncSend(
+    operator: string,
+    param: any,
+    callback: RequestCallback,
+  ) {
     await this.asyncSend(operator, param, callback);
   }
 
   // 添加消息监听
-  addMessageListener(operator: string, listener: (data: string) => void) {
+  public addMessageListener(
+    operator: string,
+    listener: (data: string) => void,
+  ) {
     this.listeners[Utils.crc32(operator)] = listener;
   }
 
   // 移除消息监听
-  removeMessageListener(operator: string) {
+  public removeMessageListener(operator: string) {
     delete this.listeners[Utils.crc32(operator)];
   }
 
   // 获取socket的链接状态
-  getReadyState() {
+  public getReadyState() {
     return this.socket.readyState;
   }
 
   // 设置单个请求能够处理的最大字节数
-  setMaxPayload(maxPayload) {
+  public setMaxPayload(maxPayload) {
     this.maxPayload = maxPayload;
   }
 
   // 设置请求属性
-  setRequestProperty(key: string, value: string) {
+  public setRequestProperty(key: string, value: string) {
     let v = this.getRequestProperty(key);
 
     this.requestHeader = this.requestHeader.replace(key + '=' + v + ';', '');
@@ -146,7 +141,7 @@ class Client {
   }
 
   // 获取请求属性
-  getRequestProperty(key: string): string {
+  public getRequestProperty(key: string): string {
     if (this.requestHeader !== undefined) {
       let values = this.requestHeader.split(';');
       for (let index in values) {
@@ -161,7 +156,7 @@ class Client {
   }
 
   // 设置Response属性
-  setResponseProperty(key: string, value: string) {
+  public setResponseProperty(key: string, value: string) {
     let v = this.getResponseProperty(key);
 
     this.responseHeader = this.responseHeader.replace(key + '=' + v + ';', '');
@@ -169,7 +164,7 @@ class Client {
   }
 
   // 获取响应属性
-  getResponseProperty(key: string): string {
+  public getResponseProperty(key: string): string {
     if (this.responseHeader !== undefined) {
       let values = this.responseHeader.split(';');
       for (let index in values) {
@@ -184,7 +179,7 @@ class Client {
   }
 
   // 创建连接
-  connect(): WebSocket {
+  private connect(): WebSocket {
     const readyStateCallback = this.readyStateCallback;
     let ws = new WebSocket(this.url);
 
@@ -246,7 +241,7 @@ class Client {
     return ws;
   }
 
-  reconnect() {
+  private reconnect() {
     if (!this.reconnectLock) {
       this.reconnectLock = true;
       console.info('websocket reconnect in ' + this.reconnectTimes + 's');
@@ -256,6 +251,18 @@ class Client {
         this.socket = this.connect();
         this.reconnectLock = false;
       }, this.reconnectTimes * 1000);
+    }
+  }
+
+  private send(data: ArrayBuffer) {
+    if (this.socket.readyState !== this.socket.OPEN) {
+      console.error('WebSocket is already in CLOSING or CLOSED state.');
+      return;
+    }
+    try {
+      this.socket.send(data);
+    } catch (e) {
+      console.log('send data error', e);
     }
   }
 }
