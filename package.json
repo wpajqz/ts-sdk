@@ -4,6 +4,8 @@
   "description": "linker's ts sdk",
   "main": "lib/src/client.js",
   "scripts": {
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "npm run type-check -- --watch",
     "start": "webpack-dev-server  --mode development",
     "test": "jest",
     "build": "webpack --config webpack.config.js"
@@ -19,13 +21,23 @@
     "node-int64": "^0.4.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.4",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "@babel/preset-typescript": "^7.3.3",
+    "@babel/runtime": "^7.4.4",
     "@types/crypto-js": "^3.1.43",
     "@types/jest": "^24.0.11",
     "@types/node-int64": "^0.4.29",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.5",
+    "babel-preset-env": "^1.7.0",
     "html-webpack-plugin": "^3.2.0",
     "jest": "^24.5.0",
     "ts-jest": "^24.0.0",
-    "ts-loader": "^6.0.0",
     "typescript": "^3.3.4000",
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.2",

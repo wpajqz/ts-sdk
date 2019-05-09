@@ -19,17 +19,13 @@ module.exports = {
         filename: 'main.js',
         path: path.resolve(__dirname, 'dist')
     },
+    resolve: { extensions: ['.js', '.jsx', '.tsx', '.ts', '.json'] },
     module: {
-        rules: [{
-            test: /\.ts$/,
-            use: "ts-loader"
-        }]
-    },
-    resolve: {
-        extensions: [
-            '.ts',
-            '.js',
-            '.tsx'
-        ]
+      rules: [{
+          // Include ts, tsx, js, and jsx files.
+          test: /\.(ts|js)x?$/,
+          exclude: /node_modules/,
+          loader: 'babel-loader',
+      }],
     }
 };
