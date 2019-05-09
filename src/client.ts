@@ -1,6 +1,18 @@
-import { ReadyStateCallback, RequestCallback } from './types/callback';
 import { Packet } from './packet';
 import { Utils } from './utils';
+
+interface ReadyStateCallback {
+  onOpen(ev: Event): void;
+  onError(ev: Event): void;
+  onClose(ev: Event): void;
+}
+
+interface RequestCallback {
+  onStart(): void;
+  onSuccess(data: string): void;
+  onError(code: number, message: string): void;
+  onEnd(): void;
+}
 
 /**
  * 初始化链接以及收发数据
@@ -323,4 +335,4 @@ class Client {
   }
 }
 
-export { Client };
+export { Client, ReadyStateCallback, RequestCallback };
