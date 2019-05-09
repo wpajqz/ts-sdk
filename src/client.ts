@@ -1,4 +1,4 @@
-import { ReadyStateCallback, RequestCallback } from './callback';
+import { ReadyStateCallback, RequestCallback } from './types/callback';
 import { Packet } from './packet';
 import { Utils } from './utils';
 

@@ -7,9 +7,15 @@
     "alwaysStrict": true,
     "sourceMap": true,
     "declaration": true,
-    "rootDir": "src",
+    "rootDirs": [
+      "src",
+      "example"
+    ],
     "outDir": "dist/",
     "declarationDir": "dist/types"
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*",
+    "example/**/*"
+  ]
 }
