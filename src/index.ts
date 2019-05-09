@@ -35,8 +35,10 @@ class Client {
       throw new Error('asyncSend: connection refuse');
     }
 
+    const heartbeatOperator = 0;
+
     this.listeners.set(
-      0,
+      heartbeatOperator,
       (data: string): void => {
         const code = this.getResponseProperty('code');
         if (code !== '') {
@@ -51,7 +53,9 @@ class Client {
     );
 
     const p = new Packet();
-    this.send(p.pack(0, 0, this.requestHeader, JSON.stringify(param)));
+    this.send(
+      p.pack(heartbeatOperator, 0, this.requestHeader, JSON.stringify(param)),
+    );
   }
 
   send(data: ArrayBuffer) {
