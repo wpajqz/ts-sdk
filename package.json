@@ -1,16 +1,19 @@
 {
-  "name": "ts-sdk",
+  "name": "ts-linker-sdk",
   "version": "1.0.0",
   "description": "linker's ts sdk",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
     "start": "webpack-dev-server  --mode development",
     "test": "jest",
     "build": "webpack --config webpack.config.js"
   },
-  "publid":true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wpajqz/ts-sdk.git"
+  },
   "author": "Paul",
-  "license": "ISC",
+  "license": "private",
   "dependencies": {
     "crypto-js": "^3.1.9-1",
     "node-int64": "^0.4.0"
