@@ -282,8 +282,9 @@ class Client {
                 packet.body = '{}';
               }
 
+              this.responseHeader = packet.header;
               (<(data: string) => void>this.listeners.get(operator))(
-                packet.body,
+                JSON.parse(packet.body),
               );
             }
 

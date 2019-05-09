@@ -1,5 +1,5 @@
 import { Utils } from './utils';
-import Int64 = require('node-int64');
+import Int64 from 'node-int64';
 
 export class Packet {
   private key: string = 'b8ca9aa66def05ff3f24919274bb4a66';

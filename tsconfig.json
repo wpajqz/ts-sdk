@@ -1,18 +1,25 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    // Target latest version of ECMAScript.
     "target": "es5",
+    // Search under node_modules for non-relative imports.
     "moduleResolution": "node",
+    // Process & infer types from .js files.
+    "allowJs": true,
+    // Don't emit; allow Babel to transform files.
+    "noEmit": true,
+    // Import non-ES modules as default imports.
+    "esModuleInterop": true,
+    // Enable strictest settings like strictNullChecks & noImplicitAny.
     "strictNullChecks": true,
     "alwaysStrict": true,
     "sourceMap": true,
-    "declaration": true,
     "rootDirs": [
       "src",
       "example"
     ],
     "outDir": "lib/",
-    "declarationDir": "lib/types"
   },
   "include": [
     "src/**/*",
