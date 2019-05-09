@@ -11,8 +11,8 @@
       "src",
       "example"
     ],
-    "outDir": "dist/",
-    "declarationDir": "dist/types"
+    "outDir": "lib/",
+    "declarationDir": "lib/types"
   },
   "include": [
     "src/**/*",
