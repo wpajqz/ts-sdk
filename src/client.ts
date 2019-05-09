@@ -2,10 +2,13 @@ import { ReadyStateCallback, RequestCallback } from './types/callback';
 import { Packet } from './packet';
 import { Utils } from './utils';
 
+/**
+ * 数据包默认最大发送的数据量大小
+ */
 const MAX_PAYLOAD = 1024 * 1024;
 
 /**
- * Client ws client, 单例模式, 负责维护连接
+ * 初始化链接以及收发数据
  */
 class Client {
   private _maxPayload: number;
@@ -18,6 +21,11 @@ class Client {
   private socket: WebSocket;
   private readyStateCallback: ReadyStateCallback;
 
+  /**
+   * 构造函数，初始化客户端链接
+   * @param url websocket链接地址
+   * @param readyStateCallback 链接状态回调，可以处理onOpen、onClose、onError
+   */
   constructor(url: string, readyStateCallback: ReadyStateCallback) {
     this.listeners = new Map<number, (data: string) => void>();
     this.requestHeader = '';
@@ -29,7 +37,11 @@ class Client {
     this.socket = this.connect();
   }
 
-  // 向服务端发送ping包保持长连接
+  /**
+   * 发送ping请求，来保持长连接
+   * @param param 请求参数,比如{"hello":"world"}
+   * @param requestCallback 请求状态回调
+   */
   public ping(param: any, requestCallback: RequestCallback) {
     if (this.socket.readyState !== this.socket.OPEN) {
       throw new Error('asyncSend: connection refuse');
@@ -59,10 +71,10 @@ class Client {
   }
 
   /**
-   * asyncSend
-   * @param {*} operator
-   * @param {*} param
-   * @param {*} callback 仅此次有效的callback
+   * 异步向服务端发送请求
+   * @param operator 路由地址
+   * @param param 请求参数，比如{"hello":"world"}
+   * @param callback 请求状态回调处理
    */
   public asyncSend(operator: string, param: any, callback: RequestCallback) {
     console.info('websocket send data', operator, this.requestHeader, param);
@@ -100,7 +112,12 @@ class Client {
     );
   }
 
-  // 同步请求服务端数据
+  /**
+   * 同步方式向服务端发送请求
+   * @param operator 路由地址
+   * @param param 请求参数，比如{"hello":"world"}
+   * @param callback 请求状态回调处理
+   */
   public async syncSend(
     operator: string,
     param: any,
@@ -109,34 +126,55 @@ class Client {
     await this.asyncSend(operator, param, callback);
   }
 
-  // 添加消息监听
+  /**
+   * 添加消息监听
+   * @description 添加消息监听器，比如operator是/v1/message/listener，那么从服务端推送到/v1/message/listener的消息会进入到定义的listener里面进行处理
+   * @param operator 消息监听地址
+   * @param listener 定义如何处理从服务端返回的消息
+   */
   public addMessageListener(
     operator: string,
     listener: (data: string) => void,
-  ) {
+  ): void {
     this.listeners[Utils.crc32(operator)] = listener;
   }
 
-  // 移除消息监听
+  /**
+   * 移除消息监听
+   * @param operator 消息监听地址
+   */
   public removeMessageListener(operator: string) {
     delete this.listeners[Utils.crc32(operator)];
   }
 
-  // 获取socket的链接状态
+  /**
+   * 返回Websocket链接状态
+   * @returns Websocket的链接状态
+   */
   public get readyState(): number {
     return this.socket.readyState;
   }
 
-  // 设置单个请求能够处理的最大字节数
+  /**
+   * 设置可以处理的数据包上限
+   * @param maxPayload 最多可以处理的数据包大小
+   */
   public set maxPayload(maxPayload: number) {
     this._maxPayload = maxPayload;
   }
 
+  /**
+   * 获取可以处理的数据包大小
+   */
   public get maxPayload(): number {
     return this._maxPayload;
   }
 
-  // 设置请求属性
+  /**
+   * 添加请求属性，会携带在数据帧里面发送到服务端
+   * @param key 属性名
+   * @param value 属性值
+   */
   public setRequestProperty(key: string, value: string) {
     let v = this.getRequestProperty(key);
 
@@ -144,7 +182,10 @@ class Client {
     this.requestHeader = this.requestHeader + key + '=' + value + ';';
   }
 
-  // 获取请求属性
+  /**
+   * 获取请求属性
+   * @param key 属性名
+   */
   public getRequestProperty(key: string): string {
     if (this.requestHeader !== undefined) {
       let values = this.requestHeader.split(';');
@@ -159,7 +200,11 @@ class Client {
     return '';
   }
 
-  // 设置Response属性
+  /**
+   * 设置响应属性，客户端基本用不到，都是服务端来进行设置
+   * @param key 属性名
+   * @param value 属性值
+   */
   public setResponseProperty(key: string, value: string) {
     let v = this.getResponseProperty(key);
 
@@ -167,7 +212,10 @@ class Client {
     this.responseHeader = this.responseHeader + key + '=' + value + ';';
   }
 
-  // 获取响应属性
+  /**
+   * 获取从服务端返回的属性
+   * @param key 获取响应属性
+   */
   public getResponseProperty(key: string): string {
     if (this.responseHeader !== undefined) {
       let values = this.responseHeader.split(';');
@@ -182,7 +230,9 @@ class Client {
     return '';
   }
 
-  // 创建连接
+  /**
+   * 创建websocket链接
+   */
   private connect(): WebSocket {
     const readyStateCallback = this.readyStateCallback;
     let ws = new WebSocket(this.url);
@@ -245,6 +295,9 @@ class Client {
     return ws;
   }
 
+  /**
+   * 断线重连
+   */
   private reconnect() {
     if (!this.reconnectLock) {
       this.reconnectLock = true;
@@ -258,6 +311,10 @@ class Client {
     }
   }
 
+  /**
+   * 向服务端发送数据请求
+   * @param data 向服务端传送的数据
+   */
   private send(data: ArrayBuffer) {
     if (this.socket.readyState !== this.socket.OPEN) {
       console.error('WebSocket is already in CLOSING or CLOSED state.');
