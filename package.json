@@ -6,9 +6,9 @@
   "scripts": {
     "type-check": "tsc --noEmit",
     "type-check:watch": "npm run type-check -- --watch",
-    "start": "webpack-dev-server  --mode development",
+    "start": "webpack-dev-server --mode development",
     "test": "jest",
-    "build": "webpack --config webpack.config.js"
+    "build": "webpack --mode production --config webpack.config.js"
   },
   "repository": {
     "type": "git",
