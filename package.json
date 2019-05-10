@@ -39,6 +39,8 @@
     "babel-preset-env": "^1.7.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",
+    "eslint-friendly-formatter": "^4.0.1",
+    "eslint-loader": "^2.1.2",
     "html-webpack-plugin": "^3.2.0",
     "jest": "^24.5.0",
     "ts-jest": "^24.0.0",

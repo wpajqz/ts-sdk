@@ -265,7 +265,7 @@ class Client {
         reader.readAsArrayBuffer(ev.data);
         reader.onload = (): void => {
           try {
-            let packet = new Packet().unPack(reader.result);
+            let packet = new Packet().unPack(reader.result as ArrayBuffer);
             let packetLength = packet.headerLength + packet.bodyLength + 20;
             if (packetLength > this._maxPayload) {
               throw new Error('the packet is big than ' + this._maxPayload);

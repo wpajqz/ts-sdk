@@ -21,11 +21,20 @@ module.exports = {
     },
     resolve: { extensions: ['.js', '.jsx', '.tsx', '.ts', '.json'] },
     module: {
-      rules: [{
+      rules: [
+      {
           // Include ts, tsx, js, and jsx files.
           test: /\.(ts|js)x?$/,
           exclude: /node_modules/,
           loader: 'babel-loader',
-      }],
+      },
+      {
+          test: /\.(ts|js)x?$/,
+          loader: 'eslint-loader',
+          options: {
+            formatter: require('eslint-friendly-formatter')
+        }
+      }
+    ],
     }
 };

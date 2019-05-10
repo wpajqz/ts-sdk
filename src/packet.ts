@@ -45,7 +45,7 @@ export class Packet {
     return buf;
   }
 
-  public unPack(data: any): Packet {
+  public unPack(data: ArrayBuffer | SharedArrayBuffer): Packet {
     const dataView = new DataView(data);
 
     this.operator = dataView.getUint32(0, false);

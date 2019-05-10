@@ -4,23 +4,23 @@ const url = 'ws://127.0.0.1:8081';
 const client = new Client(
   url,
   new (class {
-    onOpen(ev: Event) {
+    public onOpen(): void {
       client.ping(
         {},
         new (class {
-          onStart(): void {
+          public onStart(): void {
             console.log('start ping');
           }
 
-          onSuccess(data: string): void {
+          public onSuccess(data: string): void {
             console.log('ping successful:', data);
           }
 
-          onError(code: number, message: string): void {
+          public onError(code: number, message: string): void {
             console.log('ping error:', message);
           }
 
-          onEnd(): void {
+          public onEnd(): void {
             console.log('end ping');
           }
         })(),
@@ -30,31 +30,31 @@ const client = new Client(
         '/v1/healthy',
         {},
         new (class {
-          onStart(): void {
+          public onStart(): void {
             console.log('start request');
           }
 
-          onSuccess(data: string): void {
+          public onSuccess(data: string): void {
             console.log('request successful:', data);
           }
 
-          onError(code: number, message: string): void {
+          public onError(code: number, message: string): void {
             console.log('request error:', message);
           }
 
-          onEnd(): void {
+          public onEnd(): void {
             console.log('end request');
           }
         })(),
       );
     }
 
-    onClose(ev: Event) {
+    public onClose(ev: Event): void {
       console.log('connection error', ev);
       console.log(ev);
     }
 
-    onError(ev: Event) {
+    public onError(): void {
       console.log('close connection');
     }
   })(),
