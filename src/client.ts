@@ -21,7 +21,7 @@ class Client {
    * @param url websocket链接地址
    * @param readyStateCallback 链接状态回调，可以处理onOpen、onClose、onError
    */
-  constructor(url: string, readyStateCallback: ReadyStateCallback) {
+  public constructor(url: string, readyStateCallback: ReadyStateCallback) {
     this.listeners = new Map<number, (data: string) => void>();
     this.requestHeader = '';
     this.requestHeader = '';
@@ -37,7 +37,7 @@ class Client {
    * @param param 请求参数,比如{"hello":"world"}
    * @param requestCallback 请求状态回调
    */
-  public ping(param: any, requestCallback: RequestCallback) {
+  public ping(param: any, requestCallback: RequestCallback): void {
     if (this.socket.readyState !== this.socket.OPEN) {
       throw new Error('asyncSend: connection refuse');
     }
@@ -71,7 +71,11 @@ class Client {
    * @param param 请求参数，比如{"hello":"world"}
    * @param callback 请求状态回调处理
    */
-  public asyncSend(operator: string, param: any, callback: RequestCallback) {
+  public asyncSend(
+    operator: string,
+    param: any,
+    callback: RequestCallback,
+  ): void {
     console.info('websocket send data', operator, this.requestHeader, param);
 
     if (this.socket.readyState !== this.socket.OPEN) {
@@ -82,19 +86,22 @@ class Client {
 
     const sequence = new Date().getTime();
     const listener = Utils.crc32(operator) + sequence;
-    this.listeners.set(listener, (data: string) => {
-      const code = this.getResponseProperty('code');
-      if (code !== '') {
-        const message = this.getResponseProperty('message');
-        callback.onError(Number(code), message);
-      } else {
-        callback.onSuccess(data);
-      }
+    this.listeners.set(
+      listener,
+      (data: string): void => {
+        const code = this.getResponseProperty('code');
+        if (code !== '') {
+          const message = this.getResponseProperty('message');
+          callback.onError(Number(code), message);
+        } else {
+          callback.onSuccess(data);
+        }
 
-      callback.onEnd();
+        callback.onEnd();
 
-      delete this.listeners[listener];
-    });
+        delete this.listeners[listener];
+      },
+    );
 
     const p = new Packet();
     this.send(
@@ -117,7 +124,7 @@ class Client {
     operator: string,
     param: any,
     callback: RequestCallback,
-  ) {
+  ): Promise<void> {
     await this.asyncSend(operator, param, callback);
   }
 
@@ -170,7 +177,7 @@ class Client {
    * @param key 属性名
    * @param value 属性值
    */
-  public setRequestProperty(key: string, value: string) {
+  public setRequestProperty(key: string, value: string): void {
     let v = this.getRequestProperty(key);
 
     this.requestHeader = this.requestHeader.replace(key + '=' + v + ';', '');
@@ -200,7 +207,7 @@ class Client {
    * @param key 属性名
    * @param value 属性值
    */
-  public setResponseProperty(key: string, value: string) {
+  public setResponseProperty(key: string, value: string): void {
     let v = this.getResponseProperty(key);
 
     this.responseHeader = this.responseHeader.replace(key + '=' + v + ';', '');
@@ -234,29 +241,29 @@ class Client {
 
     ws.binaryType = 'blob';
 
-    ws.onopen = (ev) => {
+    ws.onopen = (ev): void => {
       this.reconnectTimes = 0;
 
       readyStateCallback.onOpen(ev);
     };
 
-    ws.onclose = (ev) => {
+    ws.onclose = (ev): void => {
       this.reconnect();
 
       readyStateCallback.onClose(ev);
     };
 
-    ws.onerror = (ev) => {
+    ws.onerror = (ev): void => {
       this.reconnect();
 
       readyStateCallback.onError(ev);
     };
 
-    ws.onmessage = (ev) => {
+    ws.onmessage = (ev): void => {
       if (ev.data instanceof Blob) {
         let reader = new FileReader();
         reader.readAsArrayBuffer(ev.data);
-        reader.onload = () => {
+        reader.onload = (): void => {
           try {
             let packet = new Packet().unPack(reader.result);
             let packetLength = packet.headerLength + packet.bodyLength + 20;
@@ -271,7 +278,8 @@ class Client {
               }
 
               this.responseHeader = packet.header;
-              (<(data: string) => void>this.listeners.get(operator))(
+
+              (this.listeners.get(operator) as (data: string) => void)(
                 JSON.parse(packet.body),
               );
             }
@@ -294,12 +302,12 @@ class Client {
   /**
    * 断线重连
    */
-  private reconnect() {
+  private reconnect(): void {
     if (!this.reconnectLock) {
       this.reconnectLock = true;
       console.info('websocket reconnect in ' + this.reconnectTimes + 's');
       // 尝试重连
-      setTimeout(() => {
+      setTimeout((): void => {
         this.reconnectTimes++;
         this.socket = this.connect();
         this.reconnectLock = false;
@@ -311,7 +319,7 @@ class Client {
    * 向服务端发送数据请求
    * @param data 向服务端传送的数据
    */
-  private send(data: ArrayBuffer) {
+  private send(data: ArrayBuffer): void {
     if (this.socket.readyState !== this.socket.OPEN) {
       console.error('WebSocket is already in CLOSING or CLOSED state.');
       return;
