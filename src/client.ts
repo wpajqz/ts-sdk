@@ -37,7 +37,7 @@ class Client {
    * @param param 请求参数,比如{"hello":"world"}
    * @param requestCallback 请求状态回调
    */
-  public ping(param: any, requestCallback: RequestCallback): void {
+  public ping(param: object, requestCallback: RequestCallback): void {
     if (this.socket.readyState !== this.socket.OPEN) {
       throw new Error('asyncSend: connection refuse');
     }
@@ -73,7 +73,7 @@ class Client {
    */
   public asyncSend(
     operator: string,
-    param: any,
+    param: object,
     callback: RequestCallback,
   ): void {
     console.info('websocket send data', operator, this.requestHeader, param);
@@ -122,7 +122,7 @@ class Client {
    */
   public async syncSend(
     operator: string,
-    param: any,
+    param: object,
     callback: RequestCallback,
   ): Promise<void> {
     await this.asyncSend(operator, param, callback);
@@ -145,7 +145,7 @@ class Client {
    * 移除消息监听
    * @param operator 消息监听地址
    */
-  public removeMessageListener(operator: string) {
+  public removeMessageListener(operator: string): void {
     delete this.listeners[Utils.crc32(operator)];
   }
 
