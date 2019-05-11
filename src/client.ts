@@ -138,7 +138,7 @@ class Client {
     operator: string,
     listener: (data: string) => void,
   ): void {
-    this.listeners[Utils.crc32(operator)] = listener;
+    this.listeners.set(Utils.crc32(operator), listener);
   }
 
   /**
