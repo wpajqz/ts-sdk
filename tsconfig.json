@@ -2,7 +2,7 @@
   "compileOnSave": true,
   "compilerOptions": {
     // Target latest version of ECMAScript.
-    "target": "es6",
+    "target": "es5",
     // Search under node_modules for non-relative imports.
     "moduleResolution": "node",
     // Process & infer types from .js files.

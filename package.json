@@ -1,6 +1,6 @@
 {
   "name": "ts-linker-sdk",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "linker's ts sdk",
   "main": "lib/src/client.js",
   "scripts": {
