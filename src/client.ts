@@ -10,6 +10,7 @@ const clientError = 400;
  */
 class Client {
   private _maxPayload: number;
+  private _enableLogger: boolean;
   private listeners: Map<number, (data: string) => void>;
   private requestHeader: string;
   private responseHeader: string;
@@ -18,7 +19,6 @@ class Client {
   private reconnectLock: boolean;
   private socket: WebSocket;
   private readyStateCallback: ReadyStateCallback;
-  private _enableLogger: boolean;
 
   /**
    * 构造函数，初始化客户端链接
@@ -35,6 +35,21 @@ class Client {
     this.readyStateCallback = readyStateCallback;
     this._enableLogger = false;
     this.socket = this.connect();
+  }
+
+  /**
+   * 设置可以处理的数据包上限
+   * @param maxPayload 最多可以处理的数据包大小
+   */
+  public set maxPayload(maxPayload: number) {
+    this._maxPayload = maxPayload;
+  }
+
+  /**
+   * 获取可以处理的数据包大小
+   */
+  public get maxPayload(): number {
+    return this._maxPayload;
   }
 
   /**
@@ -108,68 +123,6 @@ class Client {
   }
 
   /**
-   * 异步向服务端发送请求
-   * @param operator 路由地址
-   * @param param 请求参数，比如{"hello":"world"}
-   * @param callback 请求状态回调处理
-   */
-  private asyncSend(operator: string, param: object): Promise<string> {
-    return new Promise(
-      (
-        resolve: (data: string) => void,
-        reject: (err: WebsocketError) => void,
-      ): void => {
-        if (this.socket.readyState !== this.socket.OPEN) {
-          if (this._enableLogger) {
-            console.log('[ping]: connection refuse');
-          }
-
-          reject(
-            new WebsocketError(clientError, 'asyncSend: connection refuse'),
-          );
-        }
-
-        const sequence = new Date().getTime();
-        const listener = Utils.crc32(operator) + sequence;
-        this.listeners.set(
-          listener,
-          (data: string): void => {
-            const code = this.getResponseProperty('code');
-            if (code !== '') {
-              const message = this.getResponseProperty('message');
-              reject(new WebsocketError(Number(code), message));
-            } else {
-              resolve(data);
-            }
-
-            delete this.listeners[listener];
-          },
-        );
-
-        const p = new Packet();
-        this.send(
-          p.pack(
-            Utils.crc32(operator),
-            sequence,
-            this.requestHeader,
-            JSON.stringify(param),
-          ),
-        );
-
-        if (this._enableLogger) {
-          console.info(
-            '[send data packet]',
-            operator,
-            sequence,
-            this.requestHeader,
-            param,
-          );
-        }
-      },
-    );
-  }
-
-  /**
    * 同步方式向服务端发送请求
    * @param operator 路由地址
    * @param param 请求参数，比如{"hello":"world"}
@@ -206,21 +159,6 @@ class Client {
    */
   public get readyState(): number {
     return this.socket.readyState;
-  }
-
-  /**
-   * 设置可以处理的数据包上限
-   * @param maxPayload 最多可以处理的数据包大小
-   */
-  public set maxPayload(maxPayload: number) {
-    this._maxPayload = maxPayload;
-  }
-
-  /**
-   * 获取可以处理的数据包大小
-   */
-  public get maxPayload(): number {
-    return this._maxPayload;
   }
 
   /**
@@ -403,6 +341,68 @@ class Client {
     } catch (e) {
       throw new Error('send data error' + e);
     }
+  }
+
+  /**
+   * 异步向服务端发送请求
+   * @param operator 路由地址
+   * @param param 请求参数，比如{"hello":"world"}
+   * @param callback 请求状态回调处理
+   */
+  private asyncSend(operator: string, param: object): Promise<string> {
+    return new Promise(
+      (
+        resolve: (data: string) => void,
+        reject: (err: WebsocketError) => void,
+      ): void => {
+        if (this.socket.readyState !== this.socket.OPEN) {
+          if (this._enableLogger) {
+            console.log('[ping]: connection refuse');
+          }
+
+          reject(
+            new WebsocketError(clientError, 'asyncSend: connection refuse'),
+          );
+        }
+
+        const sequence = new Date().getTime();
+        const listener = Utils.crc32(operator) + sequence;
+        this.listeners.set(
+          listener,
+          (data: string): void => {
+            const code = this.getResponseProperty('code');
+            if (code !== '') {
+              const message = this.getResponseProperty('message');
+              reject(new WebsocketError(Number(code), message));
+            } else {
+              resolve(data);
+            }
+
+            delete this.listeners[listener];
+          },
+        );
+
+        const p = new Packet();
+        this.send(
+          p.pack(
+            Utils.crc32(operator),
+            sequence,
+            this.requestHeader,
+            JSON.stringify(param),
+          ),
+        );
+
+        if (this._enableLogger) {
+          console.info(
+            '[send data packet]',
+            operator,
+            sequence,
+            this.requestHeader,
+            param,
+          );
+        }
+      },
+    );
   }
 }
 
