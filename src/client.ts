@@ -1,6 +1,7 @@
 import { Packet } from './packet';
 import { Utils } from './utils';
-import { ReadyStateCallback, RequestCallback } from './types/callback';
+import { ReadyStateCallback } from './types/callback';
+import { WebsocketError } from './error';
 
 /**
  * 初始化链接以及收发数据
@@ -35,33 +36,42 @@ class Client {
   /**
    * 发送ping请求，来保持长连接
    * @param param 请求参数,比如{"hello":"world"}
-   * @param requestCallback 请求状态回调
    */
-  public ping(param: object, requestCallback: RequestCallback): void {
-    if (this.socket.readyState !== this.socket.OPEN) {
-      throw new Error('asyncSend: connection refuse');
-    }
-
-    const heartbeatOperator = 0;
-
-    this.listeners.set(
-      heartbeatOperator,
-      (data: string): void => {
-        const code = this.getResponseProperty('code');
-        if (code !== '') {
-          const message = this.getResponseProperty('message');
-          requestCallback.onError(Number(code), message);
-        } else {
-          requestCallback.onSuccess(data);
+  public async ping(param: object): Promise<string> {
+    return new Promise(
+      (
+        resolve: (data: string) => void,
+        reject: (err: WebsocketError) => void,
+      ): void => {
+        if (this.socket.readyState !== this.socket.OPEN) {
+          reject(new WebsocketError(400, 'asyncSend: connection refuse'));
         }
 
-        requestCallback.onEnd();
-      },
-    );
+        const heartbeatOperator = 0;
 
-    const p = new Packet();
-    this.send(
-      p.pack(heartbeatOperator, 0, this.requestHeader, JSON.stringify(param)),
+        this.listeners.set(
+          heartbeatOperator,
+          (data: string): void => {
+            const code = this.getResponseProperty('code');
+            if (code !== '') {
+              const message = this.getResponseProperty('message');
+              reject(new WebsocketError(Number(code), message));
+            } else {
+              resolve(data);
+            }
+          },
+        );
+
+        const p = new Packet();
+        this.send(
+          p.pack(
+            heartbeatOperator,
+            0,
+            this.requestHeader,
+            JSON.stringify(param),
+          ),
+        );
+      },
     );
   }
 
@@ -71,46 +81,43 @@ class Client {
    * @param param 请求参数，比如{"hello":"world"}
    * @param callback 请求状态回调处理
    */
-  public asyncSend(
-    operator: string,
-    param: object,
-    callback: RequestCallback,
-  ): void {
-    console.info('websocket send data', operator, this.requestHeader, param);
-
-    if (this.socket.readyState !== this.socket.OPEN) {
-      throw new Error('asyncSend: connection refuse');
-    }
-
-    callback.onStart();
-
-    const sequence = new Date().getTime();
-    const listener = Utils.crc32(operator) + sequence;
-    this.listeners.set(
-      listener,
-      (data: string): void => {
-        const code = this.getResponseProperty('code');
-        if (code !== '') {
-          const message = this.getResponseProperty('message');
-          callback.onError(Number(code), message);
-        } else {
-          callback.onSuccess(data);
+  private asyncSend(operator: string, param: object): Promise<string> {
+    return new Promise(
+      (
+        resolve: (data: string) => void,
+        reject: (err: WebsocketError) => void,
+      ): void => {
+        if (this.socket.readyState !== this.socket.OPEN) {
+          reject(new WebsocketError(400, 'asyncSend: connection refuse'));
         }
 
-        callback.onEnd();
+        const sequence = new Date().getTime();
+        const listener = Utils.crc32(operator) + sequence;
+        this.listeners.set(
+          listener,
+          (data: string): void => {
+            const code = this.getResponseProperty('code');
+            if (code !== '') {
+              const message = this.getResponseProperty('message');
+              reject(new WebsocketError(Number(code), message));
+            } else {
+              resolve(data);
+            }
 
-        delete this.listeners[listener];
+            delete this.listeners[listener];
+          },
+        );
+
+        const p = new Packet();
+        this.send(
+          p.pack(
+            Utils.crc32(operator),
+            sequence,
+            this.requestHeader,
+            JSON.stringify(param),
+          ),
+        );
       },
-    );
-
-    const p = new Packet();
-    this.send(
-      p.pack(
-        Utils.crc32(operator),
-        sequence,
-        this.requestHeader,
-        JSON.stringify(param),
-      ),
     );
   }
 
@@ -120,12 +127,8 @@ class Client {
    * @param param 请求参数，比如{"hello":"world"}
    * @param callback 请求状态回调处理
    */
-  public async syncSend(
-    operator: string,
-    param: object,
-    callback: RequestCallback,
-  ): Promise<void> {
-    await this.asyncSend(operator, param, callback);
+  public async request(operator: string, param: object): Promise<string> {
+    return await this.asyncSend(operator, param);
   }
 
   /**
