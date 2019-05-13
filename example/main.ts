@@ -26,7 +26,7 @@ const client = new Client(
         })(),
       );
 
-      client.syncSend(
+      client.asyncSend(
         '/v1/healthy',
         {},
         new (class {
