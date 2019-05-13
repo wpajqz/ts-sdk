@@ -3,6 +3,8 @@ import { Utils } from './utils';
 import { ReadyStateCallback } from './types/callback';
 import { WebsocketError } from './error';
 
+const clientError = 400;
+
 /**
  * 初始化链接以及收发数据
  */
@@ -16,6 +18,7 @@ class Client {
   private reconnectLock: boolean;
   private socket: WebSocket;
   private readyStateCallback: ReadyStateCallback;
+  private _enableLogger: boolean;
 
   /**
    * 构造函数，初始化客户端链接
@@ -30,7 +33,22 @@ class Client {
     this.url = url;
     this.reconnectTimes = 0;
     this.readyStateCallback = readyStateCallback;
+    this._enableLogger = false;
     this.socket = this.connect();
+  }
+
+  /**
+   * 设置是否允许显示运行日志
+   */
+  public set enableLogger(enableLogger: boolean) {
+    this._enableLogger = enableLogger;
+  }
+
+  /**
+   * 获取是否显示日志的配置信息
+   */
+  public get enableLogger(): boolean {
+    return this._enableLogger;
   }
 
   /**
@@ -44,7 +62,11 @@ class Client {
         reject: (err: WebsocketError) => void,
       ): void => {
         if (this.socket.readyState !== this.socket.OPEN) {
-          reject(new WebsocketError(400, 'asyncSend: connection refuse'));
+          if (this._enableLogger) {
+            console.log('[ping]: connection refuse');
+          }
+
+          reject(new WebsocketError(clientError, 'connection refuse'));
         }
 
         const heartbeatOperator = 0;
@@ -71,6 +93,16 @@ class Client {
             JSON.stringify(param),
           ),
         );
+
+        if (this._enableLogger) {
+          console.info(
+            '[send data packet]',
+            heartbeatOperator,
+            0,
+            this.requestHeader,
+            param,
+          );
+        }
       },
     );
   }
@@ -88,7 +120,13 @@ class Client {
         reject: (err: WebsocketError) => void,
       ): void => {
         if (this.socket.readyState !== this.socket.OPEN) {
-          reject(new WebsocketError(400, 'asyncSend: connection refuse'));
+          if (this._enableLogger) {
+            console.log('[ping]: connection refuse');
+          }
+
+          reject(
+            new WebsocketError(clientError, 'asyncSend: connection refuse'),
+          );
         }
 
         const sequence = new Date().getTime();
@@ -117,6 +155,16 @@ class Client {
             JSON.stringify(param),
           ),
         );
+
+        if (this._enableLogger) {
+          console.info(
+            '[send data packet]',
+            operator,
+            sequence,
+            this.requestHeader,
+            param,
+          );
+        }
       },
     );
   }
@@ -245,18 +293,30 @@ class Client {
     ws.binaryType = 'blob';
 
     ws.onopen = (ev): void => {
+      if (this._enableLogger) {
+        console.info('[websocket] open connection');
+      }
+
       this.reconnectTimes = 0;
 
       readyStateCallback.onOpen(ev);
     };
 
     ws.onclose = (ev): void => {
+      if (this._enableLogger) {
+        console.info('[websocket] close connection');
+      }
+
       this.reconnect();
 
       readyStateCallback.onClose(ev);
     };
 
     ws.onerror = (ev): void => {
+      if (this._enableLogger) {
+        console.info('[websocket] error');
+      }
+
       this.reconnect();
 
       readyStateCallback.onError(ev);
@@ -287,8 +347,10 @@ class Client {
               );
             }
 
-            if (operator !== 0 && packet.body !== 'null') {
-              console.info('receive data', packet.body);
+            if (this._enableLogger) {
+              if (operator !== 0 && packet.body !== 'null') {
+                console.info('receive data packet', packet.body);
+              }
             }
           } catch (e) {
             throw new Error(e);
@@ -308,7 +370,10 @@ class Client {
   private reconnect(): void {
     if (!this.reconnectLock) {
       this.reconnectLock = true;
-      console.info('websocket reconnect in ' + this.reconnectTimes + 's');
+      if (this._enableLogger) {
+        console.info('websocket reconnect in ' + this.reconnectTimes + 's');
+      }
+
       // 尝试重连
       setTimeout((): void => {
         this.reconnectTimes++;
@@ -324,13 +389,19 @@ class Client {
    */
   private send(data: ArrayBuffer): void {
     if (this.socket.readyState !== this.socket.OPEN) {
-      console.error('WebSocket is already in CLOSING or CLOSED state.');
+      if (this._enableLogger) {
+        console.error(
+          '[send] WebSocket is already in CLOSING or CLOSED state.',
+        );
+      }
+
       return;
     }
+
     try {
       this.socket.send(data);
     } catch (e) {
-      console.log('send data error', e);
+      throw new Error('send data error' + e);
     }
   }
 }
