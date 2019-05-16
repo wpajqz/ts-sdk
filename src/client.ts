@@ -5,13 +5,17 @@ import { WebsocketError } from './error';
 
 const clientError = 400;
 
+export interface WebSocketResp {
+  value: object | string;
+}
+
 /**
  * 初始化链接以及收发数据
  */
 class Client {
   private _maxPayload: number;
   private _enableLogger: boolean;
-  private listeners: Map<number, (data: string) => void>;
+  private listeners: Map<number, (data: WebSocketResp) => void>;
   private requestHeader: string;
   private responseHeader: string;
   private url: string;
@@ -26,7 +30,7 @@ class Client {
    * @param readyStateCallback 链接状态回调，可以处理onOpen、onClose、onError
    */
   public constructor(url: string, readyStateCallback: ReadyStateCallback) {
-    this.listeners = new Map<number, (data: string) => void>();
+    this.listeners = new Map<number, (data: WebSocketResp) => void>();
     this.requestHeader = '';
     this.requestHeader = '';
     this._maxPayload = 1024 * 1024;
@@ -70,10 +74,10 @@ class Client {
    * 发送ping请求，来保持长连接
    * @param param 请求参数,比如{"hello":"world"}
    */
-  public async ping(param: object): Promise<string> {
+  public async ping(param: object): Promise<WebSocketResp> {
     return new Promise(
       (
-        resolve: (data: string) => void,
+        resolve: (data: WebSocketResp) => void,
         reject: (err: WebsocketError) => void,
       ): void => {
         if (this.socket.readyState !== this.socket.OPEN) {
@@ -88,7 +92,7 @@ class Client {
 
         this.listeners.set(
           heartbeatOperator,
-          (data: string): void => {
+          (data: WebSocketResp): void => {
             const code = this.getResponseProperty('code');
             if (code !== '') {
               const message = this.getResponseProperty('message');
@@ -128,7 +132,10 @@ class Client {
    * @param param 请求参数，比如{"hello":"world"}
    * @param callback 请求状态回调处理
    */
-  public async request(operator: string, param: object): Promise<string> {
+  public async request(
+    operator: string,
+    param: object,
+  ): Promise<WebSocketResp> {
     return await this.asyncSend(operator, param);
   }
 
@@ -140,7 +147,7 @@ class Client {
    */
   public addMessageListener(
     operator: string,
-    listener: (data: string) => void,
+    listener: (data: WebSocketResp) => void,
   ): void {
     this.listeners.set(Utils.crc32(operator), listener);
   }
@@ -220,14 +227,12 @@ class Client {
 
     return '';
   }
-
   /**
    * 关闭客户端链接
    */
   public close(code?: number, reason?: string): void {
     this.socket.close(code, reason);
   }
-
   /**
    * 创建websocket链接
    */
@@ -287,7 +292,7 @@ class Client {
 
               this.responseHeader = packet.header;
 
-              (this.listeners.get(operator) as (data: string) => void)(
+              (this.listeners.get(operator) as (data: WebSocketResp) => void)(
                 JSON.parse(packet.body),
               );
             }
@@ -312,7 +317,7 @@ class Client {
   /**
    * 断线重连
    */
-  private reconnect(): void {
+  reconnect(): void {
     if (!this.reconnectLock) {
       this.reconnectLock = true;
       if (this._enableLogger) {
@@ -356,10 +361,10 @@ class Client {
    * @param param 请求参数，比如{"hello":"world"}
    * @param callback 请求状态回调处理
    */
-  private asyncSend(operator: string, param: object): Promise<string> {
+  asyncSend(operator: string, param: object): Promise<WebSocketResp> {
     return new Promise(
       (
-        resolve: (data: string) => void,
+        resolve: (data: WebSocketResp) => void,
         reject: (err: WebsocketError) => void,
       ): void => {
         if (this.socket.readyState !== this.socket.OPEN) {
@@ -376,7 +381,7 @@ class Client {
         const listener = Utils.crc32(operator) + sequence;
         this.listeners.set(
           listener,
-          (data: string): void => {
+          (data: WebSocketResp): void => {
             const code = this.getResponseProperty('code');
             if (code !== '') {
               const message = this.getResponseProperty('message');
@@ -413,4 +418,14 @@ class Client {
   }
 }
 
-export { Client };
+let client: Client;
+
+function getClient(url: string, callback: ReadyStateCallback) {
+  if (!client) {
+    client = new Client(url, callback);
+  }
+
+  return client;
+}
+
+export { Client, getClient };
