@@ -1,4 +1,4 @@
-import { Client } from '../src/client';
+import { Client, WebSocketResp } from '../src/client';
 import { WebsocketError } from './error';
 
 const url = 'ws://127.0.0.1:8081';
@@ -7,7 +7,7 @@ const client = new Client(url, {
     client
       .ping({})
       .then(
-        (res: string): void => {
+        (res: WebSocketResp): void => {
           console.log('ping sucessful:', res);
         },
       )
@@ -20,7 +20,7 @@ const client = new Client(url, {
     client
       .request('/v1/healthy', {})
       .then(
-        (res: string): void => {
+        (res: WebSocketResp): void => {
           console.log('request successful:', res);
         },
       )

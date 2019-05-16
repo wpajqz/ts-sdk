@@ -317,7 +317,7 @@ class Client {
   /**
    * 断线重连
    */
-  reconnect(): void {
+  private reconnect(): void {
     if (!this.reconnectLock) {
       this.reconnectLock = true;
       if (this._enableLogger) {
@@ -361,7 +361,7 @@ class Client {
    * @param param 请求参数，比如{"hello":"world"}
    * @param callback 请求状态回调处理
    */
-  asyncSend(operator: string, param: object): Promise<WebSocketResp> {
+  private asyncSend(operator: string, param: object): Promise<WebSocketResp> {
     return new Promise(
       (
         resolve: (data: WebSocketResp) => void,
@@ -420,7 +420,7 @@ class Client {
 
 let client: Client;
 
-function getClient(url: string, callback: ReadyStateCallback) {
+function getClient(url: string, callback: ReadyStateCallback): Client {
   if (!client) {
     client = new Client(url, callback);
   }

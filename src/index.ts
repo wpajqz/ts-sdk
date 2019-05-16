@@ -1,3 +1,3 @@
-export { WebSocketClient } from './WebSocketClient';
 export { WebsocketError } from './error';
-export { Client } from './client';
+export { Client, WebSocketResp, getClient } from './client';
+export { ReadyStateCallback } from './types/callback';
