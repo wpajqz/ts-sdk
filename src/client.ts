@@ -222,6 +222,13 @@ class Client {
   }
 
   /**
+   * 关闭客户端链接
+   */
+  public close(code?: number, reason?: string): void {
+    this.socket.close(code, reason);
+  }
+
+  /**
    * 创建websocket链接
    */
   private connect(): WebSocket {
