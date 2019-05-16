@@ -2,13 +2,16 @@
   "name": "ts-linker-sdk",
   "version": "1.0.5",
   "description": "linker's ts sdk",
-  "main": "lib/src/client.js",
+  "main": "dist/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "type-check": "tsc --noEmit",
     "type-check:watch": "npm run type-check -- --watch",
     "start": "webpack-dev-server --mode development",
     "test": "jest",
-    "build": "tsc"
+    "build": "npm run clean && npm run build:cjs",
+    "build:cjs": "tsc --project ./tsconfig.cjs.json",
+    "clean": "rimraf dist"
   },
   "repository": {
     "type": "git",
@@ -18,7 +21,8 @@
   "license": "private",
   "dependencies": {
     "crypto-js": "^3.1.9-1",
-    "node-int64": "^0.4.0"
+    "node-int64": "^0.4.0",
+    "rimraf": "^2.6.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",
@@ -48,5 +52,8 @@
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.2",
     "webpack-dev-server": "^3.3.1"
-  }
+  },
+  "files": [
+    "dist/"
+  ]
 }

@@ -6,21 +6,15 @@
     // Search under node_modules for non-relative imports.
     "moduleResolution": "node",
     // Process & infer types from .js files.
-    "allowJs": true,
+    "allowJs": false,
     // Import non-ES modules as default imports.
     "esModuleInterop": true,
     // Enable strictest settings like strictNullChecks & noImplicitAny.
     "strictNullChecks": true,
     "alwaysStrict": true,
     "sourceMap": true,
-    "rootDirs": [
-      "src",
-      "example"
-    ],
-    "outDir": "lib/",
+    "rootDirs": ["src", "example"],
+    "outDir": "lib/"
   },
-  "include": [
-    "src/**/*",
-    "example/**/*"
-  ]
+  "include": ["src/**/*", "example/**/*"]
 }
