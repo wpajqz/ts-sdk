@@ -1,3 +1,7 @@
+export interface WebSocketResp {
+  value: object | string;
+}
+
 export class WebsocketError {
   private _code: number;
   private _msg: string;
@@ -24,3 +28,5 @@ export class WebsocketError {
     return this._msg;
   }
 }
+
+export { ReadyStateCallback } from './callback';
