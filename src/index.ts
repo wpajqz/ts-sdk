@@ -14,6 +14,7 @@ const clientError = 400;
 class Client {
   private _maxPayload: number;
   private _enableLogger: boolean;
+  private static instance: Client;
   private listeners: Map<number, (data: WebSocketResp) => void>;
   private requestHeader: string;
   private responseHeader: string;
@@ -28,7 +29,7 @@ class Client {
    * @param url websocket链接地址
    * @param readyStateCallback 链接状态回调，可以处理onOpen、onClose、onError
    */
-  public constructor(url: string, readyStateCallback: ReadyStateCallback) {
+  private constructor(url: string, readyStateCallback: ReadyStateCallback) {
     this.listeners = new Map<number, (data: WebSocketResp) => void>();
     this.requestHeader = '';
     this.requestHeader = '';
@@ -38,6 +39,19 @@ class Client {
     this.readyStateCallback = readyStateCallback;
     this._enableLogger = false;
     this.socket = this.connect();
+  }
+
+  /**
+   * 通过单例模式获取客户端链接
+   * @param url websocket链接地址
+   * @param readyStateCallback 链接状态回调，可以处理onOpen、onClose、onError
+   */
+  public static getInstance(url: string, callback: ReadyStateCallback): Client {
+    if (!Client.instance) {
+      Client.instance = new Client(url, callback);
+    }
+
+    return Client.instance;
   }
 
   /**
@@ -417,14 +431,4 @@ class Client {
   }
 }
 
-let client: Client;
-
-function getClient(url: string, callback: ReadyStateCallback): Client {
-  if (!client) {
-    client = new Client(url, callback);
-  }
-
-  return client;
-}
-
-export { Client, getClient };
+export { Client };

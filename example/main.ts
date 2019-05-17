@@ -2,7 +2,7 @@ import { Client } from '../src/';
 import { WebsocketError, WebSocketResp } from '../src/types';
 
 const url = 'ws://127.0.0.1:8081';
-const client = new Client(url, {
+const client = Client.getInstance(url, {
   onOpen(): void {
     client
       .ping({})
