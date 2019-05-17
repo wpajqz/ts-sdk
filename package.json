@@ -9,8 +9,9 @@
     "type-check:watch": "npm run type-check -- --watch",
     "start": "webpack-dev-server --mode development",
     "test": "jest",
-    "build": "npm run clean && npm run build:cjs",
+    "build": "npm run clean && npm run build:cjs && npm run build:umd",
     "build:cjs": "tsc --project ./tsconfig.cjs.json",
+    "build:umd": "NODE_ENV=production webpack --config ./webpack.config.prod.js",
     "clean": "rimraf dist"
   },
   "repository": {
