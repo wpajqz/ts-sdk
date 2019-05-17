@@ -1,25 +1,16 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: 'development',
-  entry: './example/main.ts',
-  devtool: 'inline-source-map',
-  devServer: {
-    contentBase: './dist',
-    compress: true,
-    hot: true,
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      title: 'index',
-    }),
-  ],
+  mode: 'production',
+  entry: './src/index.ts',
+  devtool: false,
   output: {
-    filename: '[name].bundle.js',
+    filename: 'index.umd.js',
     path: path.resolve(__dirname, 'dist'),
+    library: 'imSdk',
+    libraryTarget: 'umd',
   },
   resolve: { extensions: ['.js', '.jsx', '.tsx', '.ts', '.json'] },
   module: {
