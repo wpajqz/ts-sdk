@@ -16,5 +16,5 @@
     "rootDirs": ["src", "example"],
     "outDir": "lib/"
   },
-  "include": ["src/**/*", "example/**/*"]
+  "include": ["src/**/*"]
 }
