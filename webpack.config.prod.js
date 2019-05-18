@@ -7,8 +7,8 @@ module.exports = {
   entry: './src/index.ts',
   devtool: false,
   output: {
-    filename: 'index.umd.js',
-    path: path.resolve(__dirname, 'dist'),
+    filename: 'index.js',
+    path: path.resolve(__dirname, 'dist/umd'),
     library: 'imSdk',
     libraryTarget: 'umd',
   },
