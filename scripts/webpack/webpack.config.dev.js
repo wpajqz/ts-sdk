@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 const path = require('path');
+const rootPath = process.cwd();
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -8,7 +9,6 @@ module.exports = {
   entry: './example/main.ts',
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: './dist',
     compress: true,
     hot: true,
   },
@@ -19,7 +19,7 @@ module.exports = {
   ],
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(rootPath, 'dist'),
   },
   resolve: { extensions: ['.js', '.jsx', '.tsx', '.ts', '.json'] },
   module: {

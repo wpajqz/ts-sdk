@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 const path = require('path');
+const rootPath = process.cwd();
 
 module.exports = {
   mode: 'production',
@@ -8,7 +9,7 @@ module.exports = {
   devtool: false,
   output: {
     filename: 'index.js',
-    path: path.resolve(__dirname, 'dist/umd'),
+    path: path.resolve(rootPath, 'dist/umd'),
     library: 'imSdk',
     libraryTarget: 'umd',
   },
