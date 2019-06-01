@@ -11,6 +11,7 @@
     "esModuleInterop": true,
     // Enable strictest settings like strictNullChecks & noImplicitAny.
     "strictNullChecks": true,
+    "incremental": true,
     "alwaysStrict": true,
     "sourceMap": true,
     "rootDirs": ["src", "example"],

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --project ./tsconfig.cjs.json",
     "type-check:watch": "npm run type-check -- --watch",
     "start": "webpack-dev-server --config scripts/webpack/webpack.config.dev.js",
     "test": "jest --config=scripts/jest/jest.config.js",
