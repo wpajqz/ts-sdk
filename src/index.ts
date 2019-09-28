@@ -5,6 +5,7 @@ import {
   WebSocketResp,
   ReadyStateCallback,
 } from './types/index';
+import EventEmitter from 'eventemitter3';
 
 const clientError = 400;
 
@@ -15,7 +16,7 @@ class Client {
   private _maxPayload: number;
   private _enableLogger: boolean;
   private static instance: Client;
-  private listeners: Map<number, (data: WebSocketResp) => void>;
+  private listeners: EventEmitter;
   private requestHeader: string;
   private responseHeader: string;
   private url: string;
@@ -30,7 +31,7 @@ class Client {
    * @param readyStateCallback 链接状态回调，可以处理onOpen、onClose、onError
    */
   private constructor(url: string, readyStateCallback: ReadyStateCallback) {
-    this.listeners = new Map<number, (data: WebSocketResp) => void>();
+    this.listeners = new EventEmitter();
     this.requestHeader = '';
     this.requestHeader = '';
     this._maxPayload = 1024 * 1024;
@@ -103,8 +104,8 @@ class Client {
 
         const heartbeatOperator = 0;
 
-        this.listeners.set(
-          heartbeatOperator,
+        this.listeners.addListener(
+          heartbeatOperator.toString(),
           (data: WebSocketResp): void => {
             const code = this.getResponseProperty('code');
             if (code !== '') {
@@ -162,7 +163,7 @@ class Client {
     operator: string,
     listener: (data: WebSocketResp) => void,
   ): void {
-    this.listeners.set(Utils.crc32(operator), listener);
+    this.listeners.addListener(Utils.crc32(operator).toString(), listener);
   }
 
   /**
@@ -170,7 +171,7 @@ class Client {
    * @param operator 消息监听地址
    */
   public removeMessageListener(operator: string): void {
-    delete this.listeners[Utils.crc32(operator)];
+    this.listeners.removeListener(Utils.crc32(operator).toString());
   }
 
   /**
@@ -298,17 +299,17 @@ class Client {
             }
 
             let operator = Number(packet.operator) + Number(packet.sequence);
-            if (this.listeners.has(operator)) {
+            let listener = operator.toString();
+
+            this.listeners.listeners(listener).forEach((param): void => {
               if (packet.body === '') {
                 packet.body = '{}';
               }
 
               this.responseHeader = packet.header;
 
-              (this.listeners.get(operator) as (data: WebSocketResp) => void)(
-                JSON.parse(packet.body),
-              );
-            }
+              (param as (data: WebSocketResp) => void)(JSON.parse(packet.body));
+            });
 
             if (this._enableLogger) {
               if (operator !== 0 && packet.body !== 'null') {
@@ -392,8 +393,8 @@ class Client {
 
         const sequence = new Date().getTime();
         const listener = Utils.crc32(operator) + sequence;
-        this.listeners.set(
-          listener,
+        this.listeners.addListener(
+          listener.toString(),
           (data: WebSocketResp): void => {
             const code = this.getResponseProperty('code');
             if (code !== '') {

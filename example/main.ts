@@ -1,7 +1,7 @@
 import { Client } from '../src/';
 import { WebsocketError, WebSocketResp } from '../src/types';
 
-const url = 'ws://127.0.0.1:8081';
+const url = 'ws://127.0.0.1:8085';
 const client = Client.getInstance(url, {
   onOpen(): void {
     client
